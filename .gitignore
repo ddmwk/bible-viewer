@@ -23,5 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Credentials
+.env
+
 # Data
 src/data/raw/
