@@ -162,7 +162,7 @@ function App() {
                 </button>
             </div>
             <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#999', marginTop: '10px'}}>
-                v1.0
+                v1.1
             </div>
         </div>
       </div>
