@@ -1,6 +1,8 @@
 import { bibleData } from './bibleData.js'
+import { matchOfflineBibleBook } from './bibleOfflineStorage.js'
 
 const DEFAULT_MANIFEST_URL = '/bible/manifest.json'
+const BOOK_URL_PATTERN = /^\/bible\/books\/(\d{2})-([a-f0-9]{12})\.json$/u
 
 export class BibleDataError extends Error {
   constructor(code, message, options = {}) {
@@ -49,11 +51,14 @@ function validateManifest(manifest, books) {
 
   for (const [index, expectedBook] of books.entries()) {
     const book = manifest.books[index]
+    const urlMatch = typeof book?.url === 'string' ? book.url.match(BOOK_URL_PATTERN) : null
     assertData(book?.bookId === index + 1, 'INVALID_MANIFEST', '성경 manifest의 권 순서가 올바르지 않습니다.')
     assertData(book.bookName === expectedBook.name, 'INVALID_MANIFEST', '성경 manifest의 권명이 올바르지 않습니다.')
     assertData(book.chapters === expectedBook.chapters, 'INVALID_MANIFEST', '성경 manifest의 장 수가 올바르지 않습니다.')
-    assertData(typeof book.url === 'string' && book.url.startsWith('/bible/books/'), 'INVALID_MANIFEST', '성경 권 URL이 올바르지 않습니다.')
+    assertData(urlMatch, 'INVALID_MANIFEST', '성경 권 URL이 올바르지 않습니다.')
+    assertData(Number.parseInt(urlMatch[1], 10) === book.bookId, 'INVALID_MANIFEST', '성경 권 URL과 ID가 다릅니다.')
     assertData(/^[a-f0-9]{64}$/u.test(book.contentHash), 'INVALID_MANIFEST', '성경 권 hash가 올바르지 않습니다.')
+    assertData(urlMatch[2] === book.contentHash.slice(0, 12), 'INVALID_MANIFEST', '성경 권 URL과 hash가 다릅니다.')
     assertData(Number.isInteger(book.rawBytes) && book.rawBytes > 0, 'INVALID_MANIFEST', '성경 권 원본 용량이 올바르지 않습니다.')
     assertData(Number.isInteger(book.gzipBytes) && book.gzipBytes > 0, 'INVALID_MANIFEST', '성경 권 다운로드 용량이 올바르지 않습니다.')
   }
@@ -106,6 +111,7 @@ async function readJson(fetchImpl, url) {
 
 export function createBibleRepository({
   fetchImpl = globalThis.fetch,
+  matchOfflineBook = matchOfflineBibleBook,
   manifestUrl = DEFAULT_MANIFEST_URL,
   books = bibleData,
 } = {}) {
@@ -132,7 +138,30 @@ export function createBibleRepository({
     assertData(manifestBook, 'UNKNOWN_BOOK', `알 수 없는 성경 권입니다: ${bookName}`)
 
     if (!bookPromises.has(manifestBook.bookId)) {
-      const request = readJson(fetchImpl, manifestBook.url)
+      const request = Promise.resolve()
+        .then(async () => {
+          let offlineResponse = null
+          try {
+            offlineResponse = typeof matchOfflineBook === 'function'
+              ? await matchOfflineBook(manifestBook.url)
+              : null
+          } catch {
+            // Cache Storage 조회 실패는 온라인 읽기를 막지 않는다.
+          }
+
+          if (offlineResponse) {
+            if (!offlineResponse.ok) {
+              throw new BibleDataError('HTTP_ERROR', `저장된 성경 데이터가 올바르지 않습니다. (${offlineResponse.status})`)
+            }
+            try {
+              return await offlineResponse.json()
+            } catch (error) {
+              throw new BibleDataError('INVALID_JSON', '저장된 성경 데이터 JSON을 해석하지 못했습니다.', { cause: error })
+            }
+          }
+
+          return readJson(fetchImpl, manifestBook.url)
+        })
         .then((payload) => validateBookPayload(payload, manifestBook))
         .catch((error) => {
           bookPromises.delete(manifestBook.bookId)

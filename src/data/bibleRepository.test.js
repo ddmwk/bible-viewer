@@ -12,7 +12,7 @@ const manifest = {
       bookId: 1,
       bookName: '창세기',
       chapters: 2,
-      url: '/bible/books/01-test.json',
+      url: '/bible/books/01-aaaaaaaaaaaa.json',
       contentHash: hash,
       rawBytes: 100,
       gzipBytes: 50,
@@ -45,7 +45,44 @@ test('같은 권의 장 이동은 manifest와 권 파일을 한 번씩만 요청
 
   assert.deepEqual(first.verses, ['태초에'])
   assert.deepEqual(second.verses, ['땅이 혼돈하고'])
-  assert.deepEqual(calls, ['/bible/manifest.json', '/bible/books/01-test.json'])
+  assert.deepEqual(calls, ['/bible/manifest.json', '/bible/books/01-aaaaaaaaaaaa.json'])
+})
+
+test('현재 manifest URL로 저장된 권이 있으면 네트워크보다 오프라인 캐시를 우선한다', async () => {
+  const calls = []
+  const repository = createBibleRepository({
+    books,
+    fetchImpl: async (url) => {
+      calls.push(url)
+      return jsonResponse(manifest)
+    },
+    matchOfflineBook: async (url) => {
+      assert.equal(url, manifest.books[0].url)
+      return jsonResponse(bookPayload)
+    },
+  })
+
+  const chapter = await repository.loadBibleChapter('창세기', 1)
+
+  assert.deepEqual(chapter.verses, ['태초에'])
+  assert.deepEqual(calls, ['/bible/manifest.json'])
+})
+
+test('오프라인 캐시 조회가 실패하면 온라인 권 요청으로 복구한다', async () => {
+  const calls = []
+  const repository = createBibleRepository({
+    books,
+    fetchImpl: async (url) => {
+      calls.push(url)
+      return jsonResponse(url.includes('manifest') ? manifest : bookPayload)
+    },
+    matchOfflineBook: async () => {
+      throw new Error('cache unavailable')
+    },
+  })
+
+  assert.deepEqual((await repository.loadBibleChapter('창세기', 2)).verses, ['땅이 혼돈하고'])
+  assert.deepEqual(calls, ['/bible/manifest.json', '/bible/books/01-aaaaaaaaaaaa.json'])
 })
 
 test('동시에 요청한 같은 권은 하나의 fetch를 공유한다', async () => {

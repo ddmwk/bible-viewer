@@ -1,7 +1,7 @@
 # Local Bible Data Workstream Plan
 
 ## Status
-- State: In execution — book bundling and runtime repository complete
+- State: In execution — explicit offline library complete, legacy cleanup remaining
 - Last updated: 2026-07-24
 - Owner scope: Bible content source, conversion, validation, loading, caching, and Google Drive removal
 - Consumer: E-book viewer workstream in `docs/plans/ebook-reader-viewer.md`
@@ -18,9 +18,9 @@
 - [x] Phase 2: independently verify all 61 legacy JSON differences against source Markdown
 - [x] Phase 3: deterministic 66-book bundling and manifest generation
 - [x] Phase 4: runtime repository loader and request/cache validation
-- [x] Phase 5 partial: exclude all book payloads from automatic PWA precache
+- [x] Phase 5: exclude all book payloads from automatic PWA precache
+- [x] Phase 5: explicit per-book offline storage, usage UI, and repository cache reuse
 - [x] Phase 6: replace Vite glob loading and cancel stale viewer requests
-- [ ] Phase 5 remaining: explicit per-book offline storage and storage-usage UI
 - [ ] Phase 7: remove Google Drive and legacy JSON remnants
 
 ## Requirements summary
@@ -307,7 +307,7 @@ Result:
 - 실패한 권 요청은 캐시에서 제거되어 재시도할 수 있다.
 - 호출자 취소는 공유 요청을 손상시키지 않고 해당 호출에만 `AbortError`를 반환한다.
 
-### 5. Add explicit offline storage management
+### 5. Add explicit offline storage management — completed
 Files:
 - Add `src/data/bibleOfflineStorage.js`
 - Add `src/data/bibleOfflineStorage.test.js`
@@ -321,6 +321,13 @@ Tasks:
 - 저장 전후 실제 cached response 크기를 계산한다.
 - `navigator.storage.estimate()`, `persisted()`, `persist()`를 지원 여부와 함께 감싼다.
 - Cache Storage 또는 StorageManager를 지원하지 않는 환경에 명확한 fallback 상태를 제공한다.
+
+Result:
+- `/offline`에서 66권의 저장 상태, 예상 다운로드, 저장 후 예상, 실제 캐시 크기를 함께 확인한다.
+- 권별 및 선택 저장/삭제, 구약·신약·전체 빠른 선택, 검색/상태 필터를 제공한다.
+- 선택 저장은 동시에 최대 3권을 처리하고 진행 중인 fetch를 취소할 수 있다.
+- `bible-offline-v1`은 현재 content-addressed URL과 이전 hash URL을 구분하며 업데이트 필요 상태를 표시한다.
+- repository는 현재 manifest URL의 전용 캐시 응답을 우선 사용하고, 캐시 미지원/조회 실패 시 온라인 fetch로 복구한다.
 
 ### 6. Replace Vite glob loading
 Files:
@@ -340,7 +347,7 @@ Result:
 - `src/**`와 `vite.config.js`에서 `import.meta.glob`, `src/data/json`, `data/json` 런타임 참조가 0건이다.
 - production build의 성경 장 JavaScript 청크는 0개다.
 - Workbox precache는 1,262개에서 12개로 감소했고 성경 권 JSON은 0개, 데이터 manifest는 1개다.
-- 전용 오프라인 캐시 연결은 Phase 5 remaining에서 구현한다.
+- 전용 오프라인 캐시 연결을 완료했다.
 
 ### 7. Remove Google Drive remnants
 Files:

@@ -14,7 +14,7 @@
     "generate:bible-source-corrections": "node scripts/generate-bible-source-corrections.mjs",
     "generate:bible-source-change-report": "node scripts/generate-bible-source-change-report.mjs",
     "parse:bible-markdown": "node scripts/parse-bible-markdown.mjs",
-    "test": "node --test src/data/bibleData.test.js src/data/bibleRepository.test.js src/utils/readingProgress.test.js scripts/bible-source-lock-lib.test.mjs scripts/bible-source-corrections-lib.test.mjs scripts/bible-markdown-parser-lib.test.mjs scripts/bible-source-change-report-lib.test.mjs scripts/build-bible-books-lib.test.mjs",
+    "test": "node --test src/data/bibleData.test.js src/data/bibleRepository.test.js src/data/bibleOfflineStorage.test.js src/utils/readingProgress.test.js scripts/bible-source-lock-lib.test.mjs scripts/bible-source-corrections-lib.test.mjs scripts/bible-markdown-parser-lib.test.mjs scripts/bible-source-change-report-lib.test.mjs scripts/build-bible-books-lib.test.mjs",
     "verify:bible-source": "node scripts/verify-bible-source.mjs",
     "validate:bible-source-content": "node scripts/validate-bible-source-content.mjs",
     "preview": "vite preview"

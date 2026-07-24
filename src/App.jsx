@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, Calculator, CalendarDays, Home, Menu, Minus, NotebookTabs, RotateCcw } from 'lucide-react'
+import { BookOpen, Calculator, CalendarDays, HardDriveDownload, Home, Menu, Minus, NotebookTabs, RotateCcw } from 'lucide-react'
 import CountCalculator from './components/CountCalculator'
 import DailyCalculator from './components/DailyCalculator'
 import Dashboard from './components/Dashboard'
 import TargetCalculator from './components/TargetCalculator'
 import BibleViewer from './components/BibleViewer'
+import OfflineBibleManager from './components/OfflineBibleManager'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -41,6 +42,12 @@ const NAV_ITEMS = [
     title: '성경 읽기',
     description: '읽던 장으로 바로 복귀',
     icon: BookOpen,
+  },
+  {
+    path: '/offline',
+    title: '오프라인 저장',
+    description: '권별 저장 상태와 용량 관리',
+    icon: HardDriveDownload,
   },
 ]
 
@@ -204,6 +211,7 @@ function App() {
             <Route path="/count" element={<CountCalculator />} />
             <Route path="/daily" element={<DailyCalculator />} />
             <Route path="/viewer" element={<BibleViewer />} />
+            <Route path="/offline" element={<OfflineBibleManager />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </section>

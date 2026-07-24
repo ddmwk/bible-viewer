@@ -1,7 +1,7 @@
 # Design
 
 ## Source of truth
-- Status: Active — incremental improvement in progress, e-book reader experience planned
+- Status: Active — offline library implemented, e-book reader experience planned
 - Last refreshed: 2026-07-24
 - Primary product surfaces: 앱 셸(`src/App.jsx`), 대시보드(`src/components/Dashboard.jsx`), 목표 계산기(`src/components/TargetCalculator.jsx`), 분량 계산기(`src/components/CountCalculator.jsx`), 1년 회독 계산기(`src/components/DailyCalculator.jsx`), 성경 뷰어(`src/components/BibleViewer.jsx`)
 - Evidence reviewed:
@@ -318,6 +318,12 @@
 - 여러 권 다운로드는 동시에 최대 3개만 실행하고 전체 취소와 실패 항목 재시도를 제공한다.
 - 저장 여부는 기록 값이 아니라 `bible-offline-v1` Cache Storage의 실제 응답과 content hash를 기준으로 판별한다.
 - 저장 공간 보호 상태를 표시하고 사용자가 요청할 때만 브라우저 지속 저장 권한을 요청한다.
+
+### Implemented surface
+- `src/components/OfflineBibleManager.jsx`가 `/offline` 화면의 요약, 검색/필터, 빠른 선택, 권별/선택 작업을 소유한다.
+- `src/data/bibleOfflineStorage.js`가 `bible-offline-v1`의 실제 Cache Storage 상태와 StorageManager 정보를 소유한다.
+- `src/data/bibleRepository.js`는 현재 manifest URL과 정확히 일치하는 저장 응답을 먼저 읽고, 없거나 캐시 조회가 실패하면 네트워크로 복구한다.
+- 용량 문구는 manifest와 실제 response bytes에서 계산하며 문서에 적힌 예시 수치를 하드코딩하지 않는다.
 
 ### Capacity language
 - `예상 다운로드`: gzip 기준 서버 전송 예상량
