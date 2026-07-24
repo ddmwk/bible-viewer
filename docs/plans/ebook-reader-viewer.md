@@ -1,8 +1,8 @@
 # E-book Bible Viewer Workstream Plan
 
 ## Status
-- State: Ready for execution against the repository contract
-- Last updated: 2026-07-24
+- State: In execution — pure reader state utilities complete
+- Last updated: 2026-07-25
 - Owner scope: Reader layout, navigation, focus mode, preferences, verse-position resume, accessibility, and responsive behavior
 - Data dependency: `docs/plans/data-localization-and-integrity.md`
 
@@ -176,6 +176,9 @@ loadBibleChapter(bookName, chapter, { signal } = {})
 ## Work breakdown
 
 ### 1. Extract pure reader state utilities
+Status:
+- Complete
+
 Files:
 - Add `src/utils/readerPreferences.js`
 - Add `src/utils/readerPosition.js`
@@ -187,6 +190,10 @@ Tasks:
 - 잘못된 localStorage 값을 안전하게 기본값으로 대체한다.
 - 절 위치의 권/장/절 범위를 검증한다.
 - 북마크/자동 장 위치/자동 절 위치의 적용 우선순위를 순수 함수로 고정한다.
+
+Result:
+- 읽기 설정과 절 위치 저장을 UI에서 분리하고, 필드별 기본값과 localStorage 실패 처리를 고정했다.
+- 북마크 우선 진입, 저장된 장과 같은 경우에만 절 위치 복원, 실제 절 수를 벗어난 위치 무시를 테스트로 고정했다.
 
 ### 2. Establish the data adapter boundary
 Files:
