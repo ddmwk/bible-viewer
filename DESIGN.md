@@ -14,17 +14,16 @@
   - `src/data/bibleData.js`, `src/data/bibleData.test.js` — 66권/1,189장 보존 및 구약/신약/분류 메타데이터 검증
   - `src/data/bibleRepository.js` — manifest 기반 권 단위 fetch, 검증, 요청 공유 및 취소 계약
   - `scripts/build-bible-books-lib.mjs` — canonical Markdown에서 66개 content-addressed 권 파일과 용량 manifest 생성
-  - `convert_md_to_json.js` — GitHub Markdown을 JSON으로 변환했던 기존 도구이나 현재 기대하는 `src/data/raw` 원본이 저장소에 없어 재현 불가
-  - `src/utils/googleDrive.js` — 현재 주요 화면 흐름에서 사용되지 않는 보조 유틸
-  - `git status` 기준 미커밋 변경 — 사용자 문구 정리와 마지막 읽기 위치 자동 복원 후속 개선 진행 중
+  - `data/bible-source/SOURCE.md`, `docs/reports/bible-source-change-report.md` — 로컬 canonical source와 legacy JSON 감사 근거를 남긴 문서
 - Observed facts:
-  - 현재 라우트는 `/`, `/target`, `/count`, `/daily`, `/viewer` 5개다.
+  - 현재 라우트는 `/`, `/target`, `/count`, `/daily`, `/viewer`, `/offline` 6개다.
   - UI 상태는 `app_theme`, `app_font_size`, `target_history`, `count_history`, `daily_history`, `bible_bookmarks`, `bible_reading_progress`를 localStorage에 저장한다.
   - 기록 데이터 shape는 `target_history[]`, `count_history[]`, `daily_history[]`의 `{ id, date, input, result }`, `bible_bookmarks[]`의 `{ id, bookName, chapter, date, time }` 구조다.
   - `Dashboard`는 현재 마운트 시 localStorage를 다시 읽고 `storage` 이벤트를 구독한다. 리디자인 이후에도 route 재진입 시 최신 localStorage 값을 다시 읽는 동작을 보장해야 한다.
   - 성경 본문은 검증된 Markdown에서 `public/bible/books/**`로 생성되며, 뷰어는 repository를 통해 권 단위로 가져온다.
   - 같은 권의 장 이동은 메모리 캐시를 재사용하고, 이전 장 요청은 선택 변경 시 취소된다.
   - PWA는 성경 데이터 manifest만 precache하며 66개 권 payload는 자동 precache하지 않는다.
+  - Google Drive와 legacy `src/data/json/**` snapshot은 제거됐고, pinned Markdown snapshot과 generated book payload가 유일한 데이터 경로다.
   - 최근 변경으로 “구약/신약 → 분류 → 성경” 3단계 선택이 계산기와 뷰어에 반영되었고, 이 흐름은 반드시 유지되어야 한다.
 
 ## Current product snapshot

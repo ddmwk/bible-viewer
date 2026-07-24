@@ -13,6 +13,7 @@
 - `data/bible-source/markdown/**` is the vendored canonical Markdown snapshot.
 - `data/bible-source/source-lock.json` records source metadata and per-file SHA-256 hashes.
 - `data/bible-source/corrections.json` records reviewed structural exceptions without changing the vendored Markdown.
+- `docs/reports/bible-source-change-report.{md,json}` is a retained historical audit artifact from the legacy JSON migration, not an active generation target.
 - A correction is valid only for the pinned commit and exact source-file hash, path, line, and structural token.
 - Corrections may normalize parser structure but may not infer, replace, or remove scripture wording.
 - `npm run verify:bible-source` must pass before treating the snapshot as unchanged.

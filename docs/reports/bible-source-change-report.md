@@ -1,5 +1,7 @@
 # Bible Source Change Report Summary
 
+Historical note: this report is retained as the reviewed migration audit for the removed legacy `src/data/json/**` snapshot. It is no longer regenerated as part of the active toolchain.
+
 ## Scope
 - Canonical input: pinned Markdown snapshot at commit `6fefd61b1e5a7601ab9bc8ded3e147df68b0f86a`
 - Comparison target: legacy `src/data/json/**`

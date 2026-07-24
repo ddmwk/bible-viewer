@@ -1,7 +1,7 @@
 # Local Bible Data Workstream Plan
 
 ## Status
-- State: In execution — explicit offline library complete, legacy cleanup remaining
+- State: Completed — explicit offline library and legacy cleanup complete
 - Last updated: 2026-07-24
 - Owner scope: Bible content source, conversion, validation, loading, caching, and Google Drive removal
 - Consumer: E-book viewer workstream in `docs/plans/ebook-reader-viewer.md`
@@ -21,7 +21,7 @@
 - [x] Phase 5: exclude all book payloads from automatic PWA precache
 - [x] Phase 5: explicit per-book offline storage, usage UI, and repository cache reuse
 - [x] Phase 6: replace Vite glob loading and cancel stale viewer requests
-- [ ] Phase 7: remove Google Drive and legacy JSON remnants
+- [x] Phase 7: remove Google Drive and legacy JSON remnants
 
 ## Requirements summary
 - Google Drive를 성경 본문 공급원으로 사용하지 않고 저장소에 포함된 로컬 데이터를 유일한 런타임 공급원으로 확정한다.
@@ -39,15 +39,11 @@
 - Translation: 개역한글판 성경전서 1961
 - Repository license: Unlicense. Upstream README는 해당 개역한글판의 저작권이 2012년에 만료되었다고 명시한다.
 - Pinned snapshot의 `KoreanRevisedVersion/**`에는 66개 권 디렉터리와 Markdown 1,255개가 있다. 이 중 1,189개는 장 본문이고 66개는 권별 navigation/index 파일이다.
-- 위 snapshot을 현재 `convert_md_to_json.js`로 다시 변환한 1,255개 JSON은 현재 `src/data/json/**`과 `diff -qr` 기준 완전히 동일하다. 따라서 현재 JSON의 원본 계보가 확인됐다.
+- 위 snapshot과 legacy `src/data/json/**` 사이의 parity는 보존된 `docs/reports/bible-source-change-report.{md,json}` 감사 산출물로 확인했다. legacy snapshot 자체는 Phase 7에서 제거됐다.
 - 전환 전 `BibleViewer`는 `import.meta.glob('../data/json/**/*.json')`과 파일명 검색에 의존했다. 현재는 `loadBibleChapter()`만 호출한다.
 - 현재 장 로딩 effect는 `AbortController`로 이전 선택을 취소하며, 취소를 오류 UI로 표시하지 않는다.
 - 현재 Workbox 결과는 precache 12개이며 `bible/manifest.json` 1개, `bible/books/*.json` 0개다.
-- `src/utils/googleDrive.js:1-103` — Google OAuth/Drive 유틸이 남아 있으나 프로젝트에서 호출되지 않는다.
-- `package.json:15-15` — 사용되지 않는 `gapi-script` 의존성이 남아 있다.
-- `convert_md_to_json.js:23-48` — 절 헤더를 줄 시작에서만 인식해 인라인 `###### 숫자`가 이전 절 본문에 합쳐질 수 있다.
-- `convert_md_to_json.js:8-9` — 변환기는 `src/data/raw` Markdown을 원본으로 기대하지만 현재 저장소에는 이 디렉터리가 없어 JSON을 재현할 수 없다.
-- `src/data/json/06여호수아/여호수아_08.json:35-36` — 34절이 33절에 합쳐지고 34절 슬롯이 비어 있는 실제 사례다.
+- historical audit note: legacy converter와 snapshot 차이는 `docs/reports/bible-source-change-report.{md,json}`에 보존돼 있다.
 - 데이터 점검 결과:
   - 66권, 1,189장, 31,101개 절 슬롯
   - 장별 JSON 1,189개와 사용하지 않는 빈 권별 placeholder 66개
@@ -71,7 +67,7 @@
 - upstream 전체 Git history를 submodule로 포함하기보다 필요한 Markdown snapshot만 vendor한다.
   - submodule 초기화 누락으로 빌드가 실패하는 것을 피한다.
   - upstream 갱신은 별도 `sync:bible-source` 명령으로만 수행한다.
-- `src/data/json/**`은 새 파이프라인 전환을 검증하는 동안 비교용 legacy snapshot으로만 유지하고, 전환 완료 후 canonical source에서 제거한다.
+- legacy `src/data/json/**` snapshot은 parity audit 후 제거됐고, canonical source에는 포함되지 않는다.
 
 ### Conversion pipeline
 - 변환 단계:
@@ -352,6 +348,8 @@ Result:
 ### 7. Remove Google Drive remnants
 Files:
 - Delete `src/utils/googleDrive.js`
+- Delete `src/data/json/**`
+- Delete legacy comparison tooling (`convert_md_to_json.js`, `scripts/bible-source-change-report-lib.mjs`, `scripts/generate-bible-source-change-report.mjs`)
 - Update `package.json`
 - Update `package-lock.json`
 - Update `DESIGN.md`
@@ -359,13 +357,20 @@ Files:
 Tasks:
 - 사용되지 않는 `gapi-script` 의존성을 제거한다.
 - Google OAuth client ID와 동적 스크립트 로딩 코드를 제거한다.
+- legacy `src/data/json/**` snapshot과 이를 재생성/비교하던 실행 경로를 제거한다.
+- 감사 근거로 남길 `docs/reports/bible-source-change-report.{md,json}`는 역사 기록으로 유지한다.
 - `DESIGN.md`의 Google Drive open question을 “로컬 데이터 확정” 결정으로 닫는다.
 - 저장소 전체에서 `gapi`, Google Drive scope, client ID 참조가 0건인지 확인한다.
+
+Result:
+- `src/utils/googleDrive.js`, `src/data/json/**`, `convert_md_to_json.js`, legacy change-report generator/test를 제거했다.
+- `gapi-script` 의존성과 관련 lock entry를 제거했다.
+- historical parity evidence는 `docs/reports/bible-source-change-report.{md,json}`에만 남기고 활성 toolchain에서는 legacy JSON 비교를 제거했다.
 
 ## Acceptance criteria
 - `data/bible-source/markdown/**`와 source lock이 유일한 canonical 입력이다.
 - parser 결과가 정확히 66권, 1,189장이며 모든 장의 `verses`가 비어 있지 않은 문자열 배열이다.
-- legacy `src/data/json/**`은 parity report 검토 후 제거되고 런타임과 빌드 어디에서도 참조하지 않는다.
+- legacy `src/data/json/**`은 제거됐고 런타임과 빌드 어디에서도 참조하지 않는다.
 - 빈 권별 placeholder를 포함한 불필요한 JSON 출력이 생성되지 않는다.
 - 빈 절, 공백 절, `######` 표식이 각각 0건이다.
 - `npm run build:bible`이 66개 권 파일을 재현 가능하게 생성한다.
@@ -374,7 +379,7 @@ Tasks:
 - source URL, commit, 번역본 명칭과 라이선스가 `SOURCE.md`에 기록된다.
 - 변환 중 중복/누락/빈 절/알 수 없는 marker가 하나라도 있으면 빌드가 실패한다.
 - generated JSON을 직접 수정하지 않아도 source/parser/correction만으로 결과가 재현된다.
-- upstream snapshot 갱신 시 권/장/절별 change report가 생성되고 검토되지 않은 본문 변경이 자동 반영되지 않는다.
+- upstream snapshot 갱신 시 parser/correction 검증이 선행되며, 남겨둔 legacy parity report는 역사 기록으로만 사용된다.
 - 생성된 66개 권 파일의 전체 장 수가 1,189이고 원본과 절 순서가 동일하다.
 - manifest의 권별 raw/gzip 크기 합계가 실제 생성 파일 계산과 일치한다.
 - `BibleViewer`는 `import.meta.glob()`이나 물리적 데이터 경로 검색을 사용하지 않는다.
@@ -387,7 +392,7 @@ Tasks:
 - 전체 선택 전 예상 다운로드 및 저장 용량이 표시되고 명시적 실행 전에는 다운로드가 시작되지 않는다.
 - 오프라인 상태에서 저장된 권은 읽을 수 있고 저장하지 않은 권은 복구 가능한 안내를 표시한다.
 - origin 전체 사용량과 오프라인 성경 용량이 별도 항목으로 제공된다.
-- 저장소에서 `googleDrive`, `gapi-script`, Google Drive OAuth scope 참조가 0건이다.
+- 저장소의 활성 코드/스크립트 경로에서 `googleDrive`, `gapi-script`, Google Drive OAuth scope 참조가 0건이다.
 - `npm test`, `npm run lint`, `npm run build`, `git diff --check`가 통과한다.
 
 ## Verification steps
