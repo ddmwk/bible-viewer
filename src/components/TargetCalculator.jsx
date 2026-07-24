@@ -169,7 +169,7 @@ function TargetCalculator() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">저장된 기록</CardTitle>
-          <CardDescription>최근 결과부터 유지되며 기존 localStorage item shape를 그대로 사용합니다.</CardDescription>
+          <CardDescription>최근 저장한 결과부터 차례로 다시 확인할 수 있습니다.</CardDescription>
         </CardHeader>
         <CardContent>
           {history.length ? (

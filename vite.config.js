@@ -5,12 +5,19 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    allowedHosts: ['bible.jwdevelop.work']
+  },
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}', 'bible/manifest.json'],
+        globIgnores: ['bible/books/**/*.json'],
+      },
       manifest: {
         name: '성경 통독 계산기',
         short_name: '성경계산기',

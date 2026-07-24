@@ -57,7 +57,7 @@ function DailyCalculator() {
             <div>
               <CardTitle className="text-2xl">하루 페이스</CardTitle>
               <CardDescription className="mt-1 leading-6">
-                1년 회독 목표를 넣으면 하루에 읽어야 할 장 수를 같은 패턴의 결과 카드로 보여줍니다.
+                1년 목표 회독 수를 넣으면 하루에 읽을 분량을 바로 보여줍니다.
               </CardDescription>
             </div>
           </div>
@@ -126,7 +126,7 @@ function DailyCalculator() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">저장된 목표</CardTitle>
-          <CardDescription>최근 목표부터 유지되며 삭제 시 즉시 localStorage에 반영됩니다.</CardDescription>
+          <CardDescription>최근 저장한 목표부터 차례로 보이고, 필요 없으면 바로 지울 수 있습니다.</CardDescription>
         </CardHeader>
         <CardContent>
           {history.length ? (

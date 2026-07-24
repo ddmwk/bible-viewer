@@ -122,7 +122,7 @@ function App() {
       <Card className="border-[color:var(--border-subtle)] bg-transparent shadow-none">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg">읽기 환경</CardTitle>
-          <CardDescription>기존 localStorage 설정을 유지하면서 테마와 본문 크기를 조정합니다.</CardDescription>
+          <CardDescription>지금 쓰는 설정은 그대로 두고 테마와 글자 크기만 편하게 바꿉니다.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5">
           <div className="app-settings">

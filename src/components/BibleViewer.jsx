@@ -26,11 +26,20 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-
-const bibleJsonFiles = import.meta.glob('../data/json/**/*.json')
+import {
+  loadStoredReadingProgress,
+  resolveReadingPosition,
+  saveReadingProgress,
+} from '../utils/readingProgress'
+import { loadBibleChapter } from '../data/bibleRepository'
 
 function loadStoredBookmarks() {
-  return JSON.parse(localStorage.getItem('bible_bookmarks') || '[]')
+  try {
+    const parsed = JSON.parse(localStorage.getItem('bible_bookmarks') || '[]')
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
 }
 
 function BibleViewer() {
@@ -45,6 +54,7 @@ function BibleViewer() {
   const [boundaryNotice, setBoundaryNotice] = useState('')
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false)
   const [pendingTransition, setPendingTransition] = useState(null)
+  const [isLocationResolved, setIsLocationResolved] = useState(false)
 
   const currentBookIndex = useMemo(
     () => bibleData.findIndex((book) => book.name === selectedBook.name),
@@ -58,55 +68,73 @@ function BibleViewer() {
   }, [])
 
   useEffect(() => {
-    const bookmarkId = location.state?.bookmarkId
-    if (!bookmarkId) return
+    const resolvedPosition = resolveReadingPosition({
+      bookmarkId: location.state?.bookmarkId,
+      bookmarks: loadStoredBookmarks(),
+      storedProgress: loadStoredReadingProgress(localStorage, bibleData),
+      books: bibleData,
+      fallbackBook: bibleData[0],
+    })
 
-    const matched = loadStoredBookmarks().find((item) => item.id === bookmarkId)
-    if (!matched) return
+    const resolvedBook = bibleData.find((item) => item.name === resolvedPosition.bookName) || bibleData[0]
 
-    const book = bibleData.find((item) => item.name === matched.bookName)
-    if (book) {
-      setSelectedBook(book)
-      setChapter(matched.chapter)
-      setStatusMessage(`${matched.bookName} ${matched.chapter}장으로 이어 읽기를 준비했습니다.`)
+    setSelectedBook(resolvedBook)
+    setChapter(resolvedPosition.chapter)
+
+    if (resolvedPosition.source === 'bookmark') {
+      setStatusMessage(`${resolvedPosition.bookName} ${resolvedPosition.chapter}장으로 이어 읽기를 준비했습니다.`)
+    } else if (resolvedPosition.source === 'progress') {
+      setStatusMessage(`${resolvedPosition.bookName} ${resolvedPosition.chapter}장에서 이어 읽기를 복원했습니다.`)
     }
+
+    setIsLocationResolved(true)
   }, [location.state])
 
   useEffect(() => {
+    if (!isLocationResolved) return
+
+    const controller = new AbortController()
+
     const loadChapter = async () => {
       setLoading(true)
       setError(null)
       setContent([])
 
       try {
-        const chapterPad = String(chapter).padStart(2, '0')
-        const targetFileName = `${selectedBook.name}_${chapterPad}.json`.normalize('NFC')
-        const fileKey = Object.keys(bibleJsonFiles).find((key) => key.normalize('NFC').endsWith(targetFileName))
-
-        if (!fileKey) {
-          throw new Error('파일을 찾을 수 없습니다.')
-        }
-
-        const mod = await bibleJsonFiles[fileKey]()
-        const jsonContent = mod.default || mod
-
-        if (jsonContent?.verses) {
-          setContent(jsonContent.verses)
-        } else {
-          setError('데이터 형식이 올바르지 않습니다.')
-        }
+        const result = await loadBibleChapter(selectedBook.name, chapter, {
+          signal: controller.signal,
+        })
+        setContent(result.verses)
       } catch (loadError) {
+        if (loadError.name === 'AbortError') return
         console.error('Failed to load bible data:', loadError)
         setError('성경 데이터를 불러오는데 실패했습니다.')
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
     loadChapter()
     setBoundaryNotice('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [selectedBook, chapter])
+
+    return () => controller.abort()
+  }, [chapter, isLocationResolved, selectedBook])
+
+  useEffect(() => {
+    if (!isLocationResolved) return
+
+    saveReadingProgress(
+      localStorage,
+      {
+        bookName: selectedBook.name,
+        chapter,
+      },
+      bibleData
+    )
+  }, [chapter, isLocationResolved, selectedBook])
 
   const persistBookmarks = (nextBookmarks) => {
     setBookmarks(nextBookmarks)
@@ -201,7 +229,7 @@ function BibleViewer() {
             <div>
               <CardTitle className="text-2xl">성경 읽기</CardTitle>
               <CardDescription className="mt-2 leading-6">
-                장 단위 lazy loading은 유지하면서, 긴 읽기에 적합한 툴바와 본문 레이아웃으로 정리했습니다.
+                긴 읽기에 적합한 툴바와 본문 레이아웃으로 정리했습니다.
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-3">

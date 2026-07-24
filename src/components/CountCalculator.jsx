@@ -107,7 +107,7 @@ function CountCalculator() {
             <div>
               <CardTitle className="text-2xl">총 몇 장인가</CardTitle>
               <CardDescription className="mt-1 leading-6">
-                시작 위치와 끝 위치 사이의 총 읽기 분량을 같은 패턴의 카드 안에서 계산합니다.
+                시작 위치와 끝 위치 사이에 읽게 될 전체 분량을 바로 계산합니다.
               </CardDescription>
             </div>
           </div>
@@ -209,7 +209,7 @@ function CountCalculator() {
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">저장된 기록</CardTitle>
-          <CardDescription>기존 `{`{ id, date, input, result }`}` 구조를 그대로 유지합니다.</CardDescription>
+          <CardDescription>최근 저장한 기록부터 차례로 다시 확인할 수 있습니다.</CardDescription>
         </CardHeader>
         <CardContent>
           {history.length ? (

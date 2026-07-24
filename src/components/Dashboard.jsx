@@ -90,11 +90,11 @@ function Dashboard() {
         <Card className="overflow-hidden border-[color:var(--border-strong)] bg-[linear-gradient(145deg,color-mix(in_srgb,var(--bg-elevated)_92%,transparent),color-mix(in_srgb,var(--accent-primary)_8%,var(--bg-panel)))]">
           <CardHeader className="gap-3 pb-2">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--fg-muted)]">
-              Today&apos;s reading desk
+              오늘의 읽기 자리
             </p>
             <CardTitle className="text-2xl md:text-3xl">오늘 이어 읽을 자리와 최근 계산을 한눈에 정리했습니다.</CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-6">
-              북마크와 계산 기록은 localStorage에서 바로 다시 읽어와 홈에 반영합니다.
+              저장해 둔 북마크와 계산 기록을 바로 불러와 홈에서 이어 볼 수 있습니다.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 pt-4 md:grid-cols-[minmax(0,1.2fr)_minmax(220px,0.8fr)]">
