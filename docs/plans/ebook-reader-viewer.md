@@ -196,6 +196,9 @@ Result:
 - 북마크 우선 진입, 저장된 장과 같은 경우에만 절 위치 복원, 실제 절 수를 벗어난 위치 무시를 테스트로 고정했다.
 
 ### 2. Establish the data adapter boundary
+Status:
+- Complete
+
 Files:
 - Add or consume `src/data/bibleRepository.js`
 - Update `src/components/BibleViewer.jsx`
@@ -206,7 +209,14 @@ Tasks:
 - 이전 요청의 성공/실패가 새로운 선택 상태를 덮지 않게 한다.
 - loader의 실제 저장 방식과 독립적인 fixture를 사용해 UI 작업이 가능하게 한다.
 
+Result:
+- `BibleViewer`는 `loadBibleChapter(bookName, chapter, { signal })`만 사용하고 effect cleanup에서 이전 요청을 취소한다.
+- repository 테스트는 실제 JSON 경로와 분리된 fixture로 요청 공유, 취소, 오류 복구를 검증한다.
+
 ### 3. Split reader components
+Status:
+- Complete
+
 Files:
 - Update `src/components/BibleViewer.jsx`
 - Add reader components under `src/components/reader/`
@@ -216,6 +226,11 @@ Tasks:
 - `BibleViewer`는 상태 조정과 권 경계 전환만 소유한다.
 - 기존 북마크 item shape와 동작을 변경하지 않는다.
 - 중복된 상단/하단 장 이동 계산은 하나의 helper를 사용한다.
+
+Result:
+- `BibleViewer`는 위치·본문·북마크 상태와 side effect를 조정하고, reader 하위 컴포넌트는 제어형 표시 책임만 가진다.
+- 상단과 하단 장 이동은 같은 navigation model을 사용해 같은 권 이동, 권 경계 확인, 성경 처음·끝 안내를 일관되게 처리한다.
+- 기존 북마크 shape와 저장 순서를 순수 helper 테스트로 고정했다.
 
 ### 4. Build the e-book surface
 Files:

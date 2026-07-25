@@ -1,8 +1,8 @@
 # Design
 
 ## Source of truth
-- Status: Active — offline library implemented, e-book reader experience planned
-- Last refreshed: 2026-07-24
+- Status: Active — reader state and component foundations implemented
+- Last refreshed: 2026-07-25
 - Primary product surfaces: 앱 셸(`src/App.jsx`), 대시보드(`src/components/Dashboard.jsx`), 목표 계산기(`src/components/TargetCalculator.jsx`), 분량 계산기(`src/components/CountCalculator.jsx`), 1년 회독 계산기(`src/components/DailyCalculator.jsx`), 성경 뷰어(`src/components/BibleViewer.jsx`)
 - Evidence reviewed:
   - `package.json` — React 19 + Vite 7 + `react-router-dom` 7 유지, 테스트 스크립트 추가됨
@@ -10,6 +10,7 @@
   - `src/components/Dashboard.jsx` — 최근 계산/북마크 요약 대시보드
   - `src/components/TargetCalculator.jsx`, `src/components/CountCalculator.jsx`, `src/components/DailyCalculator.jsx` — 계산기 3종과 localStorage 저장 흐름
   - `src/components/BibleViewer.jsx` — 장 단위 lazy load, 북마크, 이전/다음 장 이동
+  - `src/components/reader/**` — 위치 선택, 상태 안내, 본문, 장 이동, 북마크와 권 경계 Dialog 표시 책임
   - `src/components/BibleBookSelect.jsx` — 최근 추가된 3단계 성경 선택 UI
   - `src/data/bibleData.js`, `src/data/bibleData.test.js` — 66권/1,189장 보존 및 구약/신약/분류 메타데이터 검증
   - `src/data/bibleRepository.js` — manifest 기반 권 단위 fetch, 검증, 요청 공유 및 취소 계약
