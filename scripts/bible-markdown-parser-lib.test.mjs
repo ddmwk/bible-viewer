@@ -6,9 +6,12 @@ import test from 'node:test';
 
 import {
   listCanonicalChapterFiles,
+  parseChapterFile,
   parseChapterMarkdown,
   validateBibleSourceContent,
 } from './bible-markdown-parser-lib.mjs';
+import { loadCorrectionsRegistry } from './bible-source-corrections-lib.mjs';
+import { MARKDOWN_ROOT } from './bible-source-lock-lib.mjs';
 
 test('parseChapterMarkdown parses normal numbered verses', () => {
   const parsed = parseChapterMarkdown({
@@ -120,6 +123,75 @@ test('parseChapterMarkdown applies only an exact reviewed continuation correctio
   assert.deepEqual(parsed.warnings.map((issue) => issue.code), ['APPROVED_SOURCE_CORRECTION']);
   assert.equal(parsed.verses[0].text, '앞부분 그 뒷부분');
   assert.deepEqual(stale.hardErrors.map((issue) => issue.code), ['MARKER_MISSING_VERSE_NUMBER']);
+});
+
+test('parseChapterMarkdown splits only an exact reviewed inline verse boundary', () => {
+  const rawLine = '앞 절 마지막2 다음 절 본문';
+  const entry = {
+    kind: 'inline_verse_boundary',
+    sourcePath: '01창세기/창1.md',
+    sourceLine: 2,
+    sourceHash: 'a'.repeat(64),
+    rawLine,
+    currentVerseNumber: 1,
+    nextVerseNumber: 2,
+    beforeText: '앞 절 마지막',
+    afterText: '다음 절 본문',
+  };
+  const input = {
+    content: `###### 1\n${rawLine}\n`,
+    sourcePath: 'fixture.md',
+    correctionSourcePath: entry.sourcePath,
+    sourceHash: entry.sourceHash,
+    correctionsRegistry: { entries: [entry] },
+  };
+  const parsed = parseChapterMarkdown(input);
+  const stale = parseChapterMarkdown({ ...input, sourceHash: 'b'.repeat(64) });
+
+  assert.deepEqual(parsed.verses, [
+    { number: 1, text: '앞 절 마지막', omission: false },
+    { number: 2, text: '다음 절 본문', omission: false },
+  ]);
+  assert.equal(parsed.hardErrors.length, 0);
+  assert.deepEqual(parsed.warnings.map((issue) => issue.code), ['APPROVED_SOURCE_CORRECTION']);
+  assert.deepEqual(stale.verses, [
+    { number: 1, text: rawLine, omission: false },
+  ]);
+});
+
+test('canonical Genesis 1 keeps verses 30 and 31 as separate reviewed source text', async () => {
+  const parsed = await parseChapterFile({
+    filePath: path.join(MARKDOWN_ROOT, '01창세기', '창1.md'),
+    bookName: '창세기',
+    chapterNumber: 1,
+    correctionsRegistry: await loadCorrectionsRegistry(),
+  });
+
+  assert.equal(parsed.hardErrors.length, 0);
+  assert.equal(parsed.verses.length, 31);
+  assert.equal(parsed.verses[29].number, 30);
+  assert.equal(parsed.verses[29].text.endsWith('그대로 되니라'), true);
+  assert.equal(parsed.verses[30].number, 31);
+  assert.equal(parsed.verses[30].text.startsWith('하나님이 그 지으신 모든 것을'), true);
+});
+
+test('canonical validation rejects a stale Genesis inline boundary correction', async () => {
+  const correctionsRegistry = await loadCorrectionsRegistry();
+  const staleRegistry = {
+    ...correctionsRegistry,
+    entries: correctionsRegistry.entries.map((entry) =>
+      entry.kind === 'inline_verse_boundary'
+        ? { ...entry, sourceHash: '0'.repeat(64) }
+        : entry,
+    ),
+  };
+  const result = await validateBibleSourceContent({ correctionsRegistry: staleRegistry });
+
+  assert.equal(result.counts.verses, 31101);
+  assert.equal(
+    result.hardErrors.some((issue) => issue.code === 'verse_count_mismatch'),
+    true,
+  );
 });
 
 test('parseChapterMarkdown applies only an exact reviewed chapter heading alias', () => {

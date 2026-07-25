@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "snapshotCommit": "6fefd61b1e5a7601ab9bc8ded3e147df68b0f86a",
-  "reviewedAt": "2026-07-24",
+  "reviewedAt": "2026-07-25",
   "policy": "Snapshot-pinned structural corrections only. Scripture wording is never replaced or inferred.",
   "entries": [
     {
@@ -618,6 +618,26 @@
       "snapshotCommit": "6fefd61b1e5a7601ab9bc8ded3e147df68b0f86a",
       "sourceHash": "e01df0bfcdb94ada4f832869849f7f79da23e60e9c95a2a4ecb7cb94e54cde38",
       "reviewedAt": "2026-07-24"
+    },
+    {
+      "kind": "inline_verse_boundary",
+      "sourcePath": "01창세기/창1.md",
+      "sourceLine": 94,
+      "book": "창세기",
+      "chapter": 1,
+      "verse": 30,
+      "currentVerseNumber": 30,
+      "nextVerseNumber": 31,
+      "beforeText": "또 땅의 모든 짐승과 공중의 모든 새와 생명이 있어 땅에 기는 모든 것에게는 내가 모든 푸른 풀을 식물로 주노라 하시니 그대로 되니라",
+      "afterText": "하나님이 그 지으신 모든 것을 보시니 보시기에 심히 좋았더라 저녁이 되며 아침이 되니 이는 여섯째 날이니라",
+      "rawLine": "또 땅의 모든 짐승과 공중의 모든 새와 생명이 있어 땅에 기는 모든 것에게는 내가 모든 푸른 풀을 식물로 주노라 하시니 그대로 되니라31 하나님이 그 지으신 모든 것을 보시니 보시기에 심히 좋았더라 저녁이 되며 아침이 되니 이는 여섯째 날이니라",
+      "matchMode": "exact_path_line_rawline",
+      "action": "split_inline_verse_boundary",
+      "preserveText": true,
+      "reason": "Pinned upstream snapshot joins verse 31 to verse 30; restore only the reviewed structural boundary.",
+      "snapshotCommit": "6fefd61b1e5a7601ab9bc8ded3e147df68b0f86a",
+      "sourceHash": "d2b75fec61133daf6342a77325c6cce767d5f98201c6bddc373e4c7940d0a0c8",
+      "reviewedAt": "2026-07-25"
     }
   ]
 }

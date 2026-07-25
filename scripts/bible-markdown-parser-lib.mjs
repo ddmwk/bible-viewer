@@ -7,7 +7,7 @@ import {
   findMatchingCorrection,
   loadCorrectionsRegistry,
 } from './bible-source-corrections-lib.mjs';
-import { MARKDOWN_ROOT } from './bible-source-lock-lib.mjs';
+import { MARKDOWN_ROOT, SOURCE_METADATA } from './bible-source-lock-lib.mjs';
 
 function compareNatural(left, right) {
   return left.localeCompare(right, 'ko-KR-u-kn-true');
@@ -236,6 +236,36 @@ export function parseChapterMarkdown({
         lineNumber,
         excerpt: buildExcerpt(line),
         message: 'Encountered an unexpected Markdown heading.',
+      });
+      continue;
+    }
+
+    const inlineVerseBoundaryCorrection = correctionsRegistry
+      ? findMatchingCorrection(correctionsRegistry, {
+          kind: 'inline_verse_boundary',
+          sourcePath: correctionSourcePath,
+          sourceLine: lineNumber,
+          sourceHash,
+          rawLine: line,
+          currentVerseNumber: currentVerse?.number ?? null,
+        })
+      : null;
+
+    if (inlineVerseBoundaryCorrection) {
+      appendFragment(currentVerse, inlineVerseBoundaryCorrection.beforeText);
+      currentVerse = startVerse(
+        verses,
+        inlineVerseBoundaryCorrection.nextVerseNumber,
+        lineNumber,
+      );
+      appendFragment(currentVerse, inlineVerseBoundaryCorrection.afterText);
+      warnings.push({
+        code: 'APPROVED_SOURCE_CORRECTION',
+        verseNumber: inlineVerseBoundaryCorrection.nextVerseNumber,
+        sourcePath,
+        lineNumber,
+        excerpt: buildExcerpt(line),
+        message: `Applied reviewed inline boundary for verse ${inlineVerseBoundaryCorrection.nextVerseNumber}.`,
       });
       continue;
     }
@@ -524,6 +554,7 @@ export async function validateBibleSourceContent({
   markdownRoot = MARKDOWN_ROOT,
   expectedBooks = buildExpectedBooks(),
   correctionsRegistry,
+  expectedVerseCount,
 } = {}) {
   const structure = await listCanonicalChapterFiles({ markdownRoot, expectedBooks });
   const reviewedCorrections = correctionsRegistry ?? (await loadCorrectionsRegistry());
@@ -543,6 +574,19 @@ export async function validateBibleSourceContent({
   }
 
   const verseCount = parsedChapters.reduce((sum, chapter) => sum + chapter.verses.length, 0);
+  const requiredVerseCount =
+    expectedVerseCount ??
+    (path.resolve(markdownRoot) === path.resolve(MARKDOWN_ROOT)
+      ? SOURCE_METADATA.expectedContent.totalVerses
+      : null);
+
+  if (requiredVerseCount !== null && verseCount !== requiredVerseCount) {
+    hardErrors.push({
+      code: 'verse_count_mismatch',
+      sourcePath: markdownRoot,
+      message: `Expected ${requiredVerseCount} verses, found ${verseCount}.`,
+    });
+  }
 
   return {
     counts: {

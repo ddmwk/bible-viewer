@@ -19,6 +19,9 @@
     "chapterFiles": 1189,
     "totalMarkdownFiles": 1255
   },
+  "expectedContent": {
+    "totalVerses": 31102
+  },
   "generatedFrom": "data/bible-source/markdown",
   "counts": {
     "bookDirectories": 66,

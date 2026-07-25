@@ -4,7 +4,8 @@ import path from 'node:path';
 import { validateCorrectionsRegistry } from './bible-source-corrections-lib.mjs';
 import { LOCK_PATH, MARKDOWN_ROOT, SOURCE_METADATA, SOURCE_ROOT } from './bible-source-lock-lib.mjs';
 
-const REVIEWED_AT = '2026-07-24';
+const REVIEWED_AT = '2026-07-25';
+const LEGACY_REVIEWED_AT = '2026-07-24';
 
 const headingCorrections = [1, 2, 3, 4].map((chapter) => ({
   kind: 'chapter_heading_alias',
@@ -18,6 +19,7 @@ const headingCorrections = [1, 2, 3, 4].map((chapter) => ({
   actualHeadingNormalized: `# 말라가 ${chapter}장`,
   acceptedHeadingNormalized: `# 말라기 ${chapter}장`,
   reason: 'Pinned upstream snapshot contains a chapter-title typo; only parser metadata is normalized.',
+  reviewedAt: LEGACY_REVIEWED_AT,
 }));
 
 const markerCorrections = [
@@ -64,13 +66,44 @@ const markerCorrections = [
   action: 'demote_heading_to_continuation',
   preserveText: true,
   reason: 'Reviewed Markdown heading artifact; preserve its word as continuation of the current verse.',
+  reviewedAt: LEGACY_REVIEWED_AT,
 }));
+
+const inlineVerseBoundaryCorrections = [
+  {
+    kind: 'inline_verse_boundary',
+    sourcePath: '01창세기/창1.md',
+    sourceLine: 94,
+    book: '창세기',
+    chapter: 1,
+    verse: 30,
+    currentVerseNumber: 30,
+    nextVerseNumber: 31,
+    beforeText:
+      '또 땅의 모든 짐승과 공중의 모든 새와 생명이 있어 땅에 기는 모든 것에게는 내가 모든 푸른 풀을 식물로 주노라 하시니 그대로 되니라',
+    afterText:
+      '하나님이 그 지으신 모든 것을 보시니 보시기에 심히 좋았더라 저녁이 되며 아침이 되니 이는 여섯째 날이니라',
+    rawLine:
+      '또 땅의 모든 짐승과 공중의 모든 새와 생명이 있어 땅에 기는 모든 것에게는 내가 모든 푸른 풀을 식물로 주노라 하시니 그대로 되니라31 하나님이 그 지으신 모든 것을 보시니 보시기에 심히 좋았더라 저녁이 되며 아침이 되니 이는 여섯째 날이니라',
+    matchMode: 'exact_path_line_rawline',
+    action: 'split_inline_verse_boundary',
+    preserveText: true,
+    reason:
+      'Pinned upstream snapshot joins verse 31 to verse 30; restore only the reviewed structural boundary.',
+    reviewedAt: REVIEWED_AT,
+  },
+];
 
 const lock = JSON.parse(await fs.readFile(LOCK_PATH, 'utf8'));
 const snapshotCommit = SOURCE_METADATA.upstream.commit;
 const entries = [];
 
-for (const correction of [...headingCorrections, ...markerCorrections]) {
+for (const correction of [
+  ...headingCorrections,
+  ...markerCorrections,
+  ...inlineVerseBoundaryCorrections,
+]) {
+  const { reviewedAt, ...correctionFields } = correction;
   const sourceFilePath = path.join(MARKDOWN_ROOT, correction.sourcePath);
   const content = await fs.readFile(sourceFilePath, 'utf8');
   const lines = content.replace(/^\uFEFF/u, '').replace(/\r\n/gu, '\n').split('\n');
@@ -85,12 +118,12 @@ for (const correction of [...headingCorrections, ...markerCorrections]) {
   }
 
   entries.push({
-    ...correction,
+    ...correctionFields,
     nextLine:
       correction.kind === 'continuation_marker' ? lines[correction.sourceLine] : undefined,
     snapshotCommit,
     sourceHash: lock.files[correction.sourcePath],
-    reviewedAt: REVIEWED_AT,
+    reviewedAt,
   });
 }
 

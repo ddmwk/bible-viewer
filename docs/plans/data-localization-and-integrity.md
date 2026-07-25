@@ -14,7 +14,7 @@
 - [x] Phase 1: strict verse parser and source structure validation added
 - [x] Phase 1: deterministic recovery and omission regression tests added
 - [x] Phase 2: legacy JSON comparison report generated
-- [x] Phase 2: review 33 blocking source issues and approve structural corrections
+- [x] Phase 2: review 34 blocking source issues and approve structural corrections
 - [x] Phase 2: independently verify all 61 legacy JSON differences against source Markdown
 - [x] Phase 3: deterministic 66-book bundling and manifest generation
 - [x] Phase 4: runtime repository loader and request/cache validation
@@ -45,7 +45,7 @@
 - 현재 Workbox 결과는 precache 12개이며 `bible/manifest.json` 1개, `bible/books/*.json` 0개다.
 - historical audit note: legacy converter와 snapshot 차이는 `docs/reports/bible-source-change-report.{md,json}`에 보존돼 있다.
 - 데이터 점검 결과:
-  - 66권, 1,189장, 31,101개 절 슬롯
+  - 66권, 1,189장, 31,102개 절 슬롯
   - 장별 JSON 1,189개와 사용하지 않는 빈 권별 placeholder 66개
   - 빈 절 슬롯 17개
   - 숫자를 포함한 잔여 절 표식 16개
@@ -92,7 +92,7 @@ pinned Markdown snapshot
 - 일반 Markdown AST parser만으로 문제를 해결했다고 가정하지 않는다. upstream에 인라인 heading 형태가 있으므로 성경 절 표식용 검증 parser를 별도로 둔다.
 - `data/bible-source/corrections.json`은 자동 파싱으로 해결할 수 없는 검토된 예외만 보관한다.
   - 각 항목은 권/장/절, 원본 파일 hash, 정확한 줄과 구조 token, 이유, 고정 commit, 검토일을 포함한다.
-  - 현재 승인 항목은 `말라가` 장 제목 alias 4건과 요한계시록 1–3장의 비숫자 heading을 현재 절의 continuation으로 강등하는 29건이다.
+  - 현재 승인 항목은 `말라가` 장 제목 alias 4건, 요한계시록 1–3장의 비숫자 heading을 현재 절의 continuation으로 강등하는 29건, 창세기 1장의 inline verse boundary 1건이다.
   - correction은 원본 파일 전체 SHA-256과 path/line/raw token이 모두 일치할 때만 적용한다.
   - 본문을 추측해 채우는 correction은 허용하지 않는다.
 - 변환 결과 JSON은 수동 편집하지 않는다. 수정은 Markdown snapshot, parser 또는 근거가 기록된 correction에서만 한다.
@@ -278,8 +278,8 @@ Tasks:
 - 빌드 시각처럼 매번 바뀌는 값은 포함하지 않아 재현 가능한 결과를 만든다.
 
 Result:
-- `npm run build:bible`이 66권, 1,189장, 31,101절을 생성한다.
-- 전체 크기는 raw 4,732,318 bytes, deterministic gzip 1,322,873 bytes다.
+- `npm run build:bible`이 66권, 1,189장, 31,102절을 생성한다.
+- 전체 크기는 raw 4,732,325 bytes, deterministic gzip 1,322,867 bytes다.
 - 동일 입력으로 두 번 생성한 67개 JSON(manifest + 66권)의 SHA-256 목록이 완전히 동일하다.
 - 생성 파일은 `public/bible/`에 위치하지만 `.gitignore` 대상이며 `predev`/`prebuild`에서 재생성한다.
 

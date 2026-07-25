@@ -20,8 +20,9 @@ These cases preserve source text and are recorded as review-required warnings.
 ## Reviewed source corrections
 - 4 invalid Malachi chapter headings: the source uses `말라가` instead of `말라기`
 - 29 non-numeric `######` markers in Revelation chapters 1–3
+- 1 inline verse boundary in Genesis 1 where verse 31 is joined onto verse 30 in the pinned snapshot
 
-All 33 items were reviewed and recorded in `data/bible-source/corrections.json`. A correction applies only when the pinned commit, source-file SHA-256, relative path, source line, and exact structural token match. The source Markdown remains unchanged, and no scripture wording is inferred or replaced.
+There are now 34 reviewed items in `data/bible-source/corrections.json`. The original legacy migration audit approved 33 items on 2026-07-24, and an additional Genesis 1 inline-boundary correction was approved on 2026-07-25 after reader verification exposed the merged verse. A correction applies only when the pinned commit, source-file SHA-256, relative path, source line, and exact structural token match. The source Markdown remains unchanged, and no scripture wording is inferred or replaced.
 
 ## Legacy JSON differences
 - 61 verse texts differ from the strict parser result.
@@ -38,9 +39,9 @@ An independent full review classified all 61 differences:
 
 ## Validation result
 - Hard errors: 0
-- Review warnings: 61
+- Review warnings: 62
   - deterministic recovery: 17
-  - approved source correction: 33
+  - approved source correction: 34
   - explicit `[없음]` omission: 11
 - `npm run validate:bible-source-content`: passes
 

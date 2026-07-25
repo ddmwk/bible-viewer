@@ -27,6 +27,9 @@ export const SOURCE_METADATA = {
     chapterFiles: 1189,
     totalMarkdownFiles: 1255,
   },
+  expectedContent: {
+    totalVerses: 31102,
+  },
 };
 
 function compareNatural(a, b) {
