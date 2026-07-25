@@ -1,7 +1,7 @@
 # E-book Bible Viewer Workstream Plan
 
 ## Status
-- State: In execution — pure reader state utilities complete
+- State: In execution — e-book surface complete; focus and preferences next
 - Last updated: 2026-07-25
 - Owner scope: Reader layout, navigation, focus mode, preferences, verse-position resume, accessibility, and responsive behavior
 - Data dependency: `docs/plans/data-localization-and-integrity.md`
@@ -233,6 +233,9 @@ Result:
 - 기존 북마크 shape와 저장 순서를 순수 helper 테스트로 고정했다.
 
 ### 4. Build the e-book surface
+Status:
+- Complete
+
 Files:
 - Add/update reader styles in `src/index.css` or a reader-owned stylesheet
 - Update reader component markup
@@ -243,6 +246,12 @@ Tasks:
 - 로딩 skeleton이 제목과 본문 폭을 유지하게 한다.
 - 오류 상태에 `다시 시도` 액션을 제공한다.
 - 빈 상태는 데이터 오류와 구분한다.
+
+Result:
+- `ReaderSurface`는 중첩 Card 대신 단일 `section/article` 종이 표면으로 렌더링하고, 본문 폭을 기본 약 700px로 유지하며 모바일에서는 안전 여백 안에서 축소한다.
+- 장 제목 계층, serif 본문 행간, inline `sup` 형태의 절 번호를 적용해 본문 흐름을 목록형에서 읽기형으로 바꿨다.
+- 로딩 중에도 제목 영역과 본문 폭이 유지되는 skeleton을 추가했고, 오류 상태는 본문 표면 내부에서 `다시 시도` 버튼으로 복구할 수 있게 했다.
+- 데이터가 비어 있는 경우와 fetch 실패를 분리해 서로 다른 메시지로 표시하고, 상단 상태 영역의 중복 오류 표시는 제거했다.
 
 ### 5. Add focus mode and settings
 Files:

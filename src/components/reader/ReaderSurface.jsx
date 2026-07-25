@@ -1,52 +1,82 @@
-import { BookOpen, LoaderCircle } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { BookOpen, RefreshCw, TriangleAlert } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-function ReaderSurface({ selectedBook, chapter, content, loading }) {
+function ReaderSurface({ selectedBook, chapter, content, loading, error, onRetry }) {
+  const verseCount = content.length
+  const metaLabel = loading ? '본문 준비 중' : error ? '불러오기 실패' : `${verseCount}절`
+
   return (
-    <Card className="border-[color:var(--border-subtle)] bg-[color:color-mix(in_srgb,var(--bg-elevated)_72%,transparent)] shadow-none">
-      <CardHeader className="border-b border-[color:var(--border-subtle)] pb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--fg-muted)]">
+    <section className="reader-surface" aria-labelledby="reader-surface-title">
+      <article className="reader-paper">
+        <header className="reader-paper__header">
+          <div className="reader-paper__heading">
+            <p className="reader-paper__eyebrow">
               Scripture
             </p>
-            <CardTitle className="mt-2 text-3xl">
+            <h2 id="reader-surface-title" className="reader-paper__title">
               {selectedBook.name} {chapter}장
-            </CardTitle>
+            </h2>
           </div>
-          <div className="flex items-center gap-2 text-sm text-[var(--fg-secondary)]">
+          <div className="reader-paper__meta">
             <BookOpen className="h-4 w-4" aria-hidden="true" />
-            {content.length}절
+            {metaLabel}
           </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-6">
+        </header>
+
         {loading ? (
-          <div className="flex min-h-[320px] items-center justify-center gap-3 text-[var(--fg-secondary)]">
-            <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
-            본문을 불러오는 중입니다.
+          <div className="reader-paper__body reader-paper__body--loading" aria-live="polite" aria-busy="true">
+            <div className="reader-skeleton reader-skeleton__lead" aria-hidden="true" />
+            {Array.from({ length: 8 }, (_, index) => (
+              <div
+                key={`reader-skeleton-${index + 1}`}
+                className={`reader-skeleton ${index % 3 === 2 ? 'reader-skeleton--short' : ''}`}
+                aria-hidden="true"
+              />
+            ))}
+            <p className="reader-paper__state-copy">본문을 불러오는 중입니다.</p>
           </div>
-        ) : content.length ? (
-          <div className="mx-auto max-w-4xl space-y-5 font-[(family-name:var(--font-scripture))] text-[1.05em] leading-[1.95] text-[var(--fg-primary)]">
+        ) : error ? (
+          <div className="reader-paper__body reader-paper__body--state" role="alert">
+            <div className="reader-paper__state-icon">
+              <TriangleAlert className="h-5 w-5" aria-hidden="true" />
+            </div>
+            <div className="reader-paper__state-content">
+              <h3 className="reader-paper__state-title">본문을 불러오지 못했습니다.</h3>
+              <p className="reader-paper__state-copy">{error}</p>
+              <Button type="button" onClick={onRetry} className="w-fit">
+                <RefreshCw className="h-4 w-4" />
+                다시 시도
+              </Button>
+            </div>
+          </div>
+        ) : verseCount ? (
+          <div className="reader-paper__body">
             {content.map((verse, index) => (
               <p
                 key={`${selectedBook.name}-${chapter}-${index + 1}`}
-                className="grid grid-cols-[auto_1fr] items-start gap-4 rounded-[var(--radius-sm)] px-2 py-1"
+                id={`verse-${selectedBook.name}-${chapter}-${index + 1}`}
+                data-verse-index={index}
+                className="reader-verse"
               >
-                <span className="select-none text-xs font-semibold text-[var(--fg-muted)]">
+                <sup className="reader-verse__number" aria-label={`${index + 1}절`}>
                   {index + 1}
-                </span>
+                </sup>{' '}
                 <span>{verse}</span>
               </p>
             ))}
           </div>
         ) : (
-          <div className="flex min-h-[280px] items-center justify-center text-sm text-[var(--fg-secondary)]">
-            표시할 본문이 없습니다.
+          <div className="reader-paper__body reader-paper__body--state" aria-live="polite">
+            <div className="reader-paper__state-content">
+              <h3 className="reader-paper__state-title">표시할 본문이 없습니다.</h3>
+              <p className="reader-paper__state-copy">
+                이 장의 데이터가 비어 있습니다. 다른 장으로 이동하거나 다시 불러와 보세요.
+              </p>
+            </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </article>
+    </section>
   )
 }
 

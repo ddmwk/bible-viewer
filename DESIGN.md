@@ -1,7 +1,7 @@
 # Design
 
 ## Source of truth
-- Status: Active — reader state and component foundations implemented
+- Status: Active — reader foundation and e-book surface implemented; focus/preferences pending
 - Last refreshed: 2026-07-25
 - Primary product surfaces: 앱 셸(`src/App.jsx`), 대시보드(`src/components/Dashboard.jsx`), 목표 계산기(`src/components/TargetCalculator.jsx`), 분량 계산기(`src/components/CountCalculator.jsx`), 1년 회독 계산기(`src/components/DailyCalculator.jsx`), 성경 뷰어(`src/components/BibleViewer.jsx`)
 - Evidence reviewed:
@@ -10,7 +10,7 @@
   - `src/components/Dashboard.jsx` — 최근 계산/북마크 요약 대시보드
   - `src/components/TargetCalculator.jsx`, `src/components/CountCalculator.jsx`, `src/components/DailyCalculator.jsx` — 계산기 3종과 localStorage 저장 흐름
   - `src/components/BibleViewer.jsx` — 장 단위 lazy load, 북마크, 이전/다음 장 이동
-  - `src/components/reader/**` — 위치 선택, 상태 안내, 본문, 장 이동, 북마크와 권 경계 Dialog 표시 책임
+  - `src/components/reader/**` — 위치 선택, 상태 안내, 단일 종이형 본문 표면, 장 이동, 북마크와 권 경계 Dialog 표시 책임
   - `src/components/BibleBookSelect.jsx` — 최근 추가된 3단계 성경 선택 UI
   - `src/data/bibleData.js`, `src/data/bibleData.test.js` — 66권/1,189장 보존 및 구약/신약/분류 메타데이터 검증
   - `src/data/bibleRepository.js` — manifest 기반 권 단위 fetch, 검증, 요청 공유 및 취소 계약
@@ -267,6 +267,7 @@
    - 기존 카드 중첩 축소, 단일 종이 면과 읽기 폭/행간/절 번호 개선
    - 상단 최소 툴바와 하단 장 이동 재구성
    - 로딩/오류/빈 상태를 본문 레이아웃 안으로 통합
+   - Status: complete — 기본 700px 본문 폭, inline 절 번호, skeleton, 오류 재시도와 빈 상태 분리를 구현
 2. **Focus and preferences**
    - 집중 모드 추가
    - 위치 변경/북마크/읽기 설정을 Dialog 또는 Sheet로 분리
@@ -344,6 +345,7 @@
   - `ResultPanel` — 성공/오류/저장 액션 포함 결과 박스
   - `HistoryList` — 저장 기록 공통 리스트
   - `ReaderToolbar` — 책/장/북마크/이동 액션
+  - `ReaderSurface` — 장 제목, 단일 종이 면, 본문 절 흐름, loading/error/empty 상태
   - `BookmarkPanel` — 북마크 목록과 삭제/이동
   - `OfflineLibrary` — 전체 저장 요약, 66권 상태/용량, 검색/필터, 선택 저장/삭제
   - `StorageUsageSummary` — 오프라인 성경과 사이트 전체 저장 사용량을 분리해 표시

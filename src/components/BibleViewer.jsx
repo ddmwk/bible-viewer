@@ -36,6 +36,7 @@ function BibleViewer() {
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false)
   const [pendingTransition, setPendingTransition] = useState(null)
   const [isLocationResolved, setIsLocationResolved] = useState(false)
+  const [retryNonce, setRetryNonce] = useState(0)
 
   const navigation = useMemo(
     () =>
@@ -105,7 +106,7 @@ function BibleViewer() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
 
     return () => controller.abort()
-  }, [chapter, isLocationResolved, selectedBook])
+  }, [chapter, isLocationResolved, retryNonce, selectedBook])
 
   useEffect(() => {
     if (!isLocationResolved) return
@@ -201,6 +202,10 @@ function BibleViewer() {
     setPendingTransition(null)
   }
 
+  const retryLoad = () => {
+    setRetryNonce((current) => current + 1)
+  }
+
   return (
     <div className="bible-viewer grid gap-6">
       <Card className="overflow-hidden">
@@ -219,15 +224,18 @@ function BibleViewer() {
           <ReaderStatusRegion
             statusMessage={statusMessage}
             boundaryNotice={boundaryNotice}
-            error={error}
           />
           <ReaderSurface
             selectedBook={selectedBook}
             chapter={chapter}
             content={content}
             loading={loading}
+            error={error}
+            onRetry={retryLoad}
           />
-          <ChapterNavigation onRequestMove={requestChapterMove} />
+          <div className="pt-1">
+            <ChapterNavigation onRequestMove={requestChapterMove} />
+          </div>
         </CardContent>
       </Card>
 
