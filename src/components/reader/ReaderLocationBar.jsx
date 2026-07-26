@@ -11,7 +11,7 @@ function ReaderLocationBar({
   onRequestMove,
 }) {
   return (
-    <div className="sticky top-4 z-10 rounded-[var(--radius-md)] border border-[color:var(--border-subtle)] bg-[color:color-mix(in_srgb,var(--bg-panel)_94%,transparent)] p-4 shadow-[var(--shadow-soft)] backdrop-blur">
+    <div className="reader-location-bar">
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_120px_auto] xl:items-end">
         <BibleBookSelect
           value={selectedBook.name}

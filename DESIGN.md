@@ -1,8 +1,8 @@
 # Design
 
 ## Source of truth
-- Status: Active — reader foundation and e-book surface implemented; focus/preferences pending
-- Last refreshed: 2026-07-25
+- Status: Active — reader foundation, e-book surface, and focus/preferences implemented; verse resume and accessibility polish pending
+- Last refreshed: 2026-07-26
 - Primary product surfaces: 앱 셸(`src/App.jsx`), 대시보드(`src/components/Dashboard.jsx`), 목표 계산기(`src/components/TargetCalculator.jsx`), 분량 계산기(`src/components/CountCalculator.jsx`), 1년 회독 계산기(`src/components/DailyCalculator.jsx`), 성경 뷰어(`src/components/BibleViewer.jsx`)
 - Evidence reviewed:
   - `package.json` — React 19 + Vite 7 + `react-router-dom` 7 유지, 테스트 스크립트 추가됨
@@ -269,6 +269,7 @@
    - 로딩/오류/빈 상태를 본문 레이아웃 안으로 통합
    - Status: complete — 기본 700px 본문 폭, inline 절 번호, skeleton, 오류 재시도와 빈 상태 분리를 구현
 2. **Focus and preferences**
+   - Status: complete — `App` 소유 focus mode와 reader preference 저장을 연결했고, 위치 변경/북마크/읽기 설정을 Dialog/Sheet로 분리했다.
    - 집중 모드 추가
    - 위치 변경/북마크/읽기 설정을 Dialog 또는 Sheet로 분리
    - 행간/본문 폭 설정 저장

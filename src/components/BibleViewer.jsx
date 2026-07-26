@@ -19,11 +19,25 @@ import BookmarksDialog from './reader/BookmarksDialog'
 import BoundaryTransitionDialog from './reader/BoundaryTransitionDialog'
 import ChapterNavigation from './reader/ChapterNavigation'
 import ReaderHeader from './reader/ReaderHeader'
-import ReaderLocationBar from './reader/ReaderLocationBar'
+import ReaderLocationDialog from './reader/ReaderLocationDialog'
+import ReaderSettingsDialog from './reader/ReaderSettingsDialog'
 import ReaderStatusRegion from './reader/ReaderStatusRegion'
 import ReaderSurface from './reader/ReaderSurface'
 
-function BibleViewer() {
+function BibleViewer({
+  isFocusMode,
+  onEnterFocusMode,
+  onExitFocusMode,
+  theme,
+  fontSize,
+  onThemeChange,
+  onFontSizeChange,
+  onResetFontSize,
+  readerPreferences,
+  onReaderPreferenceChange,
+  readerPreferenceStyle,
+  onOverlayChange,
+}) {
   const location = useLocation()
   const [selectedBook, setSelectedBook] = useState(bibleData[0])
   const [chapter, setChapter] = useState(1)
@@ -34,6 +48,8 @@ function BibleViewer() {
   const [statusMessage, setStatusMessage] = useState('')
   const [boundaryNotice, setBoundaryNotice] = useState('')
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false)
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false)
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false)
   const [pendingTransition, setPendingTransition] = useState(null)
   const [isLocationResolved, setIsLocationResolved] = useState(false)
   const [retryNonce, setRetryNonce] = useState(0)
@@ -206,21 +222,25 @@ function BibleViewer() {
     setRetryNonce((current) => current + 1)
   }
 
+  useEffect(() => {
+    onOverlayChange(Boolean(isBookmarksOpen || isLocationDialogOpen || isSettingsDialogOpen || pendingTransition))
+
+    return () => onOverlayChange(false)
+  }, [isBookmarksOpen, isLocationDialogOpen, isSettingsDialogOpen, onOverlayChange, pendingTransition])
+
   return (
-    <div className="bible-viewer grid gap-6">
+    <div className={`bible-viewer grid gap-6 ${isFocusMode ? 'bible-viewer--focus' : ''}`} style={readerPreferenceStyle}>
       <Card className="overflow-hidden">
         <ReaderHeader
+          isFocusMode={isFocusMode}
+          onOpenLocation={() => setIsLocationDialogOpen(true)}
           onOpenBookmarks={() => setIsBookmarksOpen(true)}
+          onOpenSettings={() => setIsSettingsDialogOpen(true)}
           onSaveBookmark={saveBookmark}
+          onEnterFocusMode={onEnterFocusMode}
+          onExitFocusMode={onExitFocusMode}
         />
         <CardContent className="grid gap-5">
-          <ReaderLocationBar
-            selectedBook={selectedBook}
-            chapter={chapter}
-            onBookChange={changeBook}
-            onChapterChange={setChapter}
-            onRequestMove={requestChapterMove}
-          />
           <ReaderStatusRegion
             statusMessage={statusMessage}
             boundaryNotice={boundaryNotice}
@@ -244,12 +264,32 @@ function BibleViewer() {
         onCancel={() => setPendingTransition(null)}
         onConfirm={confirmTransition}
       />
+      <ReaderLocationDialog
+        open={isLocationDialogOpen}
+        selectedBook={selectedBook}
+        chapter={chapter}
+        onOpenChange={setIsLocationDialogOpen}
+        onBookChange={changeBook}
+        onChapterChange={setChapter}
+        onRequestMove={requestChapterMove}
+      />
       <BookmarksDialog
         open={isBookmarksOpen}
         bookmarks={bookmarks}
         onOpenChange={setIsBookmarksOpen}
         onLoad={loadBookmark}
         onDelete={deleteBookmark}
+      />
+      <ReaderSettingsDialog
+        open={isSettingsDialogOpen}
+        onOpenChange={setIsSettingsDialogOpen}
+        theme={theme}
+        fontSize={fontSize}
+        onThemeChange={onThemeChange}
+        onFontSizeChange={onFontSizeChange}
+        onResetFontSize={onResetFontSize}
+        readerPreferences={readerPreferences}
+        onReaderPreferenceChange={onReaderPreferenceChange}
       />
     </div>
   )

@@ -25,6 +25,8 @@
   --radius-md: 20px;
   --radius-lg: 24px;
   --app-font-size: 16px;
+  --reader-line-height: 1.9;
+  --reader-content-width: 700px;
 }
 
 body.dark {

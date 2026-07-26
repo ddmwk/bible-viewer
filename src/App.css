@@ -7,6 +7,12 @@
   position: relative;
 }
 
+.app-shell--reader-focus {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 0;
+}
+
 .app-sidebar {
   position: sticky;
   top: 24px;
@@ -182,6 +188,11 @@
   gap: 20px;
 }
 
+.app-main--reader-focus {
+  min-height: 100vh;
+  gap: 0;
+}
+
 .app-topbar {
   display: flex;
   align-items: center;
@@ -217,6 +228,16 @@
   font-size: var(--app-font-size);
 }
 
+.app-content--reader-focus {
+  min-height: 100vh;
+  padding: clamp(18px, 4vw, 36px);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
 .app-content > *:first-child {
   margin-top: 0;
 }
@@ -246,6 +267,43 @@
 .dashboard {
   max-width: 1120px;
   margin: 0 auto;
+}
+
+.app-content--reader-focus > .bible-viewer {
+  max-width: none;
+}
+
+.bible-viewer--focus {
+  min-height: calc(100vh - clamp(36px, 8vw, 72px));
+  align-content: start;
+}
+
+.reader-location-bar {
+  display: grid;
+  gap: 1rem;
+}
+
+.reader-dialog__content {
+  margin: auto;
+  max-width: min(40rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.reader-settings {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.reader-settings__section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.reader-settings__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .description {
@@ -665,6 +723,10 @@ select:focus {
   .app-content {
     padding: 18px;
   }
+
+  .app-content--reader-focus {
+    padding: 18px 16px 24px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -685,6 +747,21 @@ select:focus {
   .delete-btn-small {
     width: 100%;
   }
+
+  .reader-dialog__content {
+    margin-top: auto;
+    margin-bottom: 0;
+    width: 100%;
+    max-width: none;
+    max-height: calc(100dvh - 1rem);
+    min-height: min(78vh, 44rem);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 18px 24px;
+  }
+
+  .reader-settings__options > button {
+    flex: 1 1 calc(50% - 0.25rem);
+  }
 }
 
 @media (max-width: 480px) {
@@ -702,5 +779,8 @@ select:focus {
   .viewer-chapter-field {
     flex-basis: 100%;
   }
-}
 
+  .app-content--reader-focus {
+    padding-inline: 12px;
+  }
+}

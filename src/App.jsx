@@ -10,6 +10,9 @@ import OfflineBibleManager from './components/OfflineBibleManager'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { loadReaderPreferences, saveReaderPreferences } from './utils/readerPreferences'
+import { getReaderPreferenceCssVariables } from './utils/readerPreferenceStyle'
+import { shouldExitReaderFocus, shouldResetReaderFocus } from './utils/readerFocus'
 import './App.css'
 
 const NAV_ITEMS = [
@@ -60,9 +63,14 @@ const THEME_OPTIONS = [
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('app_theme') || 'light')
   const [fontSize, setFontSize] = useState(() => Number.parseInt(localStorage.getItem('app_font_size') || '16', 10))
+  const [readerPreferences, setReaderPreferences] = useState(() => loadReaderPreferences(localStorage))
+  const [isReaderFocusMode, setIsReaderFocusMode] = useState(false)
+  const [isReaderOverlayOpen, setIsReaderOverlayOpen] = useState(false)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const isViewerRoute = location.pathname === '/viewer'
+  const isReaderFocusActive = isViewerRoute && isReaderFocusMode
 
   useEffect(() => {
     document.body.classList.remove('light', 'dark', 'green')
@@ -77,19 +85,124 @@ function App() {
     localStorage.setItem('app_font_size', String(nextFontSize))
   }, [fontSize])
 
+  useEffect(() => {
+    saveReaderPreferences(localStorage, readerPreferences)
+  }, [readerPreferences])
+
+  useEffect(() => {
+    if (!shouldResetReaderFocus({ pathname: location.pathname, focusMode: isReaderFocusMode })) return
+
+    window.setTimeout(() => {
+      setIsReaderFocusMode(false)
+    }, 0)
+  }, [isReaderFocusMode, location.pathname])
+
+  useEffect(() => {
+    if (!isReaderFocusActive) return undefined
+
+    const handleKeyDown = (event) => {
+      if (!shouldExitReaderFocus({
+        key: event.key,
+        defaultPrevented: event.defaultPrevented,
+        overlayOpen: isReaderOverlayOpen,
+      })) return
+
+      setIsReaderFocusMode(false)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isReaderFocusActive, isReaderOverlayOpen])
+
+  useEffect(() => {
+    if (!isReaderFocusActive || !isMobileNavOpen) return undefined
+
+    const timeoutId = window.setTimeout(() => {
+      setIsMobileNavOpen(false)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [isMobileNavOpen, isReaderFocusActive])
+
   const currentItem = useMemo(
     () => NAV_ITEMS.find((item) => item.path === location.pathname) ?? NAV_ITEMS[0],
     [location.pathname]
+  )
+
+  const readerPreferenceStyle = useMemo(
+    () => getReaderPreferenceCssVariables(readerPreferences),
+    [readerPreferences]
   )
 
   const handleFontSizeChange = (delta) => {
     setFontSize((current) => Math.max(12, Math.min(current + delta, 30)))
   }
 
+  const updateReaderPreference = (key, value) => {
+    setReaderPreferences((current) => ({
+      ...current,
+      [key]: value,
+    }))
+  }
+
   const handleNavigate = (path) => {
     navigate(path)
     setIsMobileNavOpen(false)
   }
+
+  const renderDisplayControls = () => (
+    <Card className="border-[color:var(--border-subtle)] bg-transparent shadow-none">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg">읽기 환경</CardTitle>
+        <CardDescription>지금 쓰는 설정은 그대로 두고 테마와 글자 크기만 편하게 바꿉니다.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-5">
+        <div className="app-settings">
+          <div className="app-settings__label">
+            <span>글자 크기</span>
+            <span>{fontSize}px</span>
+          </div>
+          <div className="app-font-controls">
+            <Button variant="secondary" size="icon" onClick={() => handleFontSizeChange(-1)} aria-label="글자 크기 줄이기">
+              <Minus className="h-4 w-4" />
+            </Button>
+            <Button variant="secondary" size="sm" className="min-w-20" onClick={() => setFontSize(16)}>
+              <RotateCcw className="h-4 w-4" />
+              기본값
+            </Button>
+            <Button variant="secondary" size="icon" onClick={() => handleFontSizeChange(1)} aria-label="글자 크기 키우기">
+              <span className="text-lg leading-none">+</span>
+            </Button>
+          </div>
+          <p className="app-settings__hint">본문과 계산 결과에 동일한 크기가 적용됩니다.</p>
+        </div>
+
+        <div className="app-settings">
+          <div className="app-settings__label">
+            <span>테마</span>
+            <span>{THEME_OPTIONS.find((option) => option.value === theme)?.label}</span>
+          </div>
+          <div className="app-theme-controls" role="group" aria-label="테마 전환">
+            {THEME_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                variant={theme === option.value ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setTheme(option.value)}
+                title={option.label}
+                aria-label={option.label}
+                aria-pressed={theme === option.value}
+              >
+                <span aria-hidden="true" className="app-theme-controls__emoji">
+                  {option.emoji}
+                </span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 
   const renderNav = ({ mobile = false } = {}) => (
     <>
@@ -125,92 +238,63 @@ function App() {
           )
         })}
       </nav>
-
-      <Card className="border-[color:var(--border-subtle)] bg-transparent shadow-none">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg">읽기 환경</CardTitle>
-          <CardDescription>지금 쓰는 설정은 그대로 두고 테마와 글자 크기만 편하게 바꿉니다.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-5">
-          <div className="app-settings">
-            <div className="app-settings__label">
-              <span>글자 크기</span>
-              <span>{fontSize}px</span>
-            </div>
-            <div className="app-font-controls">
-              <Button variant="secondary" size="icon" onClick={() => handleFontSizeChange(-1)} aria-label="글자 크기 줄이기">
-                <Minus className="h-4 w-4" />
-              </Button>
-              <Button variant="secondary" size="sm" className="min-w-20" onClick={() => setFontSize(16)}>
-                <RotateCcw className="h-4 w-4" />
-                기본값
-              </Button>
-              <Button variant="secondary" size="icon" onClick={() => handleFontSizeChange(1)} aria-label="글자 크기 키우기">
-                <span className="text-lg leading-none">+</span>
-              </Button>
-            </div>
-            <p className="app-settings__hint">본문과 계산 결과에 동일한 크기가 적용됩니다.</p>
-          </div>
-
-          <div className="app-settings">
-            <div className="app-settings__label">
-              <span>테마</span>
-              <span>{THEME_OPTIONS.find((option) => option.value === theme)?.label}</span>
-            </div>
-            <div className="app-theme-controls" role="group" aria-label="테마 전환">
-              {THEME_OPTIONS.map((option) => (
-                <Button
-                  key={option.value}
-                  variant={theme === option.value ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => setTheme(option.value)}
-                  title={option.label}
-                  aria-label={option.label}
-                  aria-pressed={theme === option.value}
-                >
-                  <span aria-hidden="true" className="app-theme-controls__emoji">
-                    {option.emoji}
-                  </span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {renderDisplayControls()}
     </>
   )
 
   return (
-    <div className="app-shell">
-      <aside className="app-sidebar" aria-label="데스크톱 주 메뉴">
-        {renderNav()}
-      </aside>
+    <div className={`app-shell ${isReaderFocusActive ? 'app-shell--reader-focus' : ''}`}>
+      {!isReaderFocusActive ? (
+        <aside className="app-sidebar" aria-label="데스크톱 주 메뉴">
+          {renderNav()}
+        </aside>
+      ) : null}
 
-      <main className="app-main">
-        <header className="app-topbar">
-          <div>
-            <p className="app-sidebar__eyebrow">현재 화면</p>
-            <h2 className="app-topbar__title">{currentItem.title}</h2>
-            <p className="app-topbar__description">{currentItem.description}</p>
-          </div>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="app-topbar__menu"
-            onClick={() => setIsMobileNavOpen(true)}
-            aria-label="메뉴 열기"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </header>
+      <main className={`app-main ${isReaderFocusActive ? 'app-main--reader-focus' : ''}`}>
+        {!isReaderFocusActive ? (
+          <header className="app-topbar">
+            <div>
+              <p className="app-sidebar__eyebrow">현재 화면</p>
+              <h2 className="app-topbar__title">{currentItem.title}</h2>
+              <p className="app-topbar__description">{currentItem.description}</p>
+            </div>
+            <Button
+              variant="secondary"
+              size="icon"
+              className="app-topbar__menu"
+              onClick={() => setIsMobileNavOpen(true)}
+              aria-label="메뉴 열기"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </header>
+        ) : null}
 
-        <section className="app-content" aria-live="polite">
+        <section className={`app-content ${isReaderFocusActive ? 'app-content--reader-focus' : ''}`} aria-live="polite">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/target" element={<TargetCalculator />} />
             <Route path="/count" element={<CountCalculator />} />
             <Route path="/daily" element={<DailyCalculator />} />
-            <Route path="/viewer" element={<BibleViewer />} />
+            <Route
+              path="/viewer"
+              element={(
+                <BibleViewer
+                  isFocusMode={isReaderFocusActive}
+                  onEnterFocusMode={() => setIsReaderFocusMode(true)}
+                  onExitFocusMode={() => setIsReaderFocusMode(false)}
+                  theme={theme}
+                  fontSize={fontSize}
+                  onThemeChange={setTheme}
+                  onFontSizeChange={handleFontSizeChange}
+                  onResetFontSize={() => setFontSize(16)}
+                  readerPreferences={readerPreferences}
+                  onReaderPreferenceChange={updateReaderPreference}
+                  readerPreferenceStyle={readerPreferenceStyle}
+                  onOverlayChange={setIsReaderOverlayOpen}
+                />
+              )}
+            />
             <Route path="/offline" element={<OfflineBibleManager />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

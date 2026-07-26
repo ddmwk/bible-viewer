@@ -1,8 +1,8 @@
 # E-book Bible Viewer Workstream Plan
 
 ## Status
-- State: In execution — e-book surface complete; focus and preferences next
-- Last updated: 2026-07-25
+- State: In execution — e-book surface and focus/preferences complete; verse resume next
+- Last updated: 2026-07-26
 - Owner scope: Reader layout, navigation, focus mode, preferences, verse-position resume, accessibility, and responsive behavior
 - Data dependency: `docs/plans/data-localization-and-integrity.md`
 
@@ -265,6 +265,12 @@ Tasks:
 - 기존 앱 테마/글자 크기 제어를 읽기 설정에서도 사용할 수 있게 연결한다.
 - 행간과 본문 폭을 `bible_reader_preferences`에 저장한다.
 - focus mode는 저장하지 않고 route 이탈 시 종료한다.
+
+Result:
+- `App.jsx`가 `isReaderFocusMode`와 `readerPreferences`를 소유하고 `/viewer` 이탈 시 focus를 자동 종료한다.
+- `BibleViewer`는 위치 변경과 읽기 설정을 제어형 Dialog로 옮기고, 열린 overlay 집계 상태를 `App`에 알려 `Esc` 우선순위를 보장한다.
+- `ReaderSettingsDialog`는 기존 앱 theme/fontSize 제어를 그대로 재사용하면서 line height와 content width만 `bible_reader_preferences`에 저장한다.
+- 모바일에서는 bottom sheet 성격, 데스크톱에서는 centered dialog로 동작한다.
 
 ### 6. Build offline library management
 Files:
