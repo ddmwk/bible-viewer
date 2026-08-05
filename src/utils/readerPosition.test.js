@@ -3,6 +3,7 @@ import test from 'node:test'
 import { bibleData } from '../data/bibleData.js'
 import {
   READER_POSITION_STORAGE_KEY,
+  findClosestVisibleVerse,
   loadStoredReaderPosition,
   resolveReaderStartPosition,
   saveReaderPosition,
@@ -65,6 +66,30 @@ test('sanitizeReaderPosition enforces verse bounds when verseCount is provided',
     ),
     null
   )
+})
+
+test('findClosestVisibleVerse chooses the intersecting verse nearest the viewport center', () => {
+  const entries = [
+    {
+      isIntersecting: true,
+      target: { dataset: { verseIndex: '2' } },
+      boundingClientRect: { top: 100, height: 40 },
+    },
+    {
+      isIntersecting: true,
+      target: { dataset: { verseIndex: '3' } },
+      boundingClientRect: { top: 430, height: 40 },
+    },
+    {
+      isIntersecting: false,
+      target: { dataset: { verseIndex: '4' } },
+      boundingClientRect: { top: 490, height: 40 },
+    },
+  ]
+
+  assert.equal(findClosestVisibleVerse(entries, 1000), 3)
+  assert.equal(findClosestVisibleVerse(entries.slice(2), 1000), null)
+  assert.equal(findClosestVisibleVerse(entries, 0), null)
 })
 
 test('loadStoredReaderPosition ignores malformed or corrupted storage values', () => {

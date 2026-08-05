@@ -26,6 +26,32 @@ function sanitizeVerseIndex(verseIndex, verseCount) {
   return verseIndex
 }
 
+export function findClosestVisibleVerse(entries, viewportHeight) {
+  if (!Array.isArray(entries) || !Number.isFinite(viewportHeight) || viewportHeight <= 0) return null
+
+  const viewportCenter = viewportHeight / 2
+
+  return entries.reduce((closest, entry) => {
+    if (!entry?.isIntersecting) return closest
+
+    const verseIndex = Number.parseInt(entry.target?.dataset?.verseIndex, 10)
+    const rect = entry.boundingClientRect
+    if (!Number.isInteger(verseIndex) || verseIndex < 0 || !rect) return closest
+
+    const rectCenter = Number.isFinite(rect.height)
+      ? rect.top + rect.height / 2
+      : (rect.top + rect.bottom) / 2
+    if (!Number.isFinite(rectCenter)) return closest
+
+    const distance = Math.abs(rectCenter - viewportCenter)
+    if (!closest || distance < closest.distance) {
+      return { verseIndex, distance }
+    }
+
+    return closest
+  }, null)?.verseIndex ?? null
+}
+
 export function sanitizeReaderPosition(value, books, { verseCount } = {}) {
   if (!isRecord(value)) return null
   if (typeof value.bookName !== 'string') return null

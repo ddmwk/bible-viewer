@@ -1,7 +1,7 @@
 # Design
 
 ## Source of truth
-- Status: Active — reader foundation, e-book surface, and focus/preferences implemented; verse resume and accessibility polish pending
+- Status: Active — reader foundation, e-book surface, focus/preferences, and verse resume implemented; accessibility polish pending
 - Last refreshed: 2026-07-26
 - Primary product surfaces: 앱 셸(`src/App.jsx`), 대시보드(`src/components/Dashboard.jsx`), 목표 계산기(`src/components/TargetCalculator.jsx`), 분량 계산기(`src/components/CountCalculator.jsx`), 1년 회독 계산기(`src/components/DailyCalculator.jsx`), 성경 뷰어(`src/components/BibleViewer.jsx`)
 - Evidence reviewed:

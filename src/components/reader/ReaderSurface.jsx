@@ -1,9 +1,115 @@
+import { useEffect, useRef } from 'react'
 import { BookOpen, RefreshCw, TriangleAlert } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { findClosestVisibleVerse } from '../../utils/readerPosition'
 
-function ReaderSurface({ selectedBook, chapter, content, loading, error, onRetry }) {
+function ReaderSurface({
+  selectedBook,
+  chapter,
+  content,
+  loading,
+  error,
+  restoredVerseIndex,
+  onActiveVerseChange,
+  onRetry,
+}) {
   const verseCount = content.length
   const metaLabel = loading ? '본문 준비 중' : error ? '불러오기 실패' : `${verseCount}절`
+  const bodyRef = useRef(null)
+  const lastObservedLocationRef = useRef('')
+  const lastScrollKeyRef = useRef('')
+  const isRestoringRef = useRef(false)
+
+  useEffect(() => {
+    if (loading || error || !verseCount || !bodyRef.current) return
+
+    const scrollKey = `${selectedBook.name}:${chapter}:${restoredVerseIndex ?? 'start'}:${verseCount}`
+    if (lastScrollKeyRef.current === scrollKey) return
+
+    isRestoringRef.current = true
+
+    const targetVerse = Number.isInteger(restoredVerseIndex)
+      ? bodyRef.current.querySelector(`[data-verse-index="${restoredVerseIndex}"]`)
+      : null
+    const scrollTarget = targetVerse || bodyRef.current
+    const frameId = window.requestAnimationFrame(() => {
+      scrollTarget.scrollIntoView({
+        block: targetVerse ? 'center' : 'start',
+        behavior: 'auto',
+      })
+      lastScrollKeyRef.current = scrollKey
+      isRestoringRef.current = false
+
+      if (targetVerse) {
+        onActiveVerseChange(restoredVerseIndex)
+      }
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frameId)
+      isRestoringRef.current = false
+    }
+  }, [
+    chapter,
+    error,
+    loading,
+    onActiveVerseChange,
+    restoredVerseIndex,
+    selectedBook.name,
+    verseCount,
+  ])
+
+  useEffect(() => {
+    if (loading || error || !verseCount || !bodyRef.current) return undefined
+
+    const verseNodes = Array.from(bodyRef.current.querySelectorAll('[data-verse-index]'))
+    if (!verseNodes.length) return undefined
+
+    const measureClosestVerse = () => {
+      if (isRestoringRef.current) return
+
+      const visibleEntries = verseNodes.map((node) => {
+        const rect = node.getBoundingClientRect()
+        return {
+          isIntersecting: rect.bottom > 0 && rect.top < window.innerHeight,
+          target: node,
+          boundingClientRect: rect,
+        }
+      })
+
+      const verseIndex = findClosestVisibleVerse(visibleEntries, window.innerHeight)
+      if (verseIndex === null) return
+
+      const locationKey = `${selectedBook.name}:${chapter}:${verseIndex}`
+      if (locationKey === lastObservedLocationRef.current) return
+
+      lastObservedLocationRef.current = locationKey
+      onActiveVerseChange(verseIndex)
+    }
+
+    const observer = new IntersectionObserver(
+      () => {
+        measureClosestVerse()
+      },
+      {
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      }
+    )
+
+    verseNodes.forEach((node) => observer.observe(node))
+
+    const handleResize = () => {
+      measureClosestVerse()
+    }
+
+    window.addEventListener('resize', handleResize)
+    measureClosestVerse()
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [chapter, error, loading, onActiveVerseChange, selectedBook.name, verseCount])
 
   return (
     <section className="reader-surface" aria-labelledby="reader-surface-title">
@@ -50,7 +156,7 @@ function ReaderSurface({ selectedBook, chapter, content, loading, error, onRetry
             </div>
           </div>
         ) : verseCount ? (
-          <div className="reader-paper__body">
+          <div ref={bodyRef} className="reader-paper__body">
             {content.map((verse, index) => (
               <p
                 key={`${selectedBook.name}-${chapter}-${index + 1}`}

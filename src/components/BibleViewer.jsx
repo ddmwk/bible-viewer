@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { bibleData } from '../data/bibleData'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   loadStoredReadingProgress,
-  resolveReadingPosition,
   saveReadingProgress,
 } from '../utils/readingProgress'
 import { loadBibleChapter } from '../data/bibleRepository'
@@ -15,6 +14,11 @@ import {
   saveStoredBookmarks,
 } from '../utils/readerBookmarks'
 import { getChapterNavigationModel } from '../utils/readerNavigation'
+import {
+  loadStoredReaderPosition,
+  resolveReaderStartPosition,
+  saveReaderPosition,
+} from '../utils/readerPosition'
 import BookmarksDialog from './reader/BookmarksDialog'
 import BoundaryTransitionDialog from './reader/BoundaryTransitionDialog'
 import ChapterNavigation from './reader/ChapterNavigation'
@@ -53,6 +57,24 @@ function BibleViewer({
   const [pendingTransition, setPendingTransition] = useState(null)
   const [isLocationResolved, setIsLocationResolved] = useState(false)
   const [retryNonce, setRetryNonce] = useState(0)
+  const [restoredVerseIndex, setRestoredVerseIndex] = useState(null)
+  const latestReaderPositionRef = useRef(null)
+  const savePositionTimeoutRef = useRef(null)
+
+  const flushReaderPosition = useCallback(() => {
+    if (savePositionTimeoutRef.current !== null) {
+      window.clearTimeout(savePositionTimeoutRef.current)
+      savePositionTimeoutRef.current = null
+    }
+
+    const latestPosition = latestReaderPositionRef.current
+    if (!latestPosition) return
+
+    saveReaderPosition(localStorage, latestPosition, bibleData, {
+      verseCount: latestPosition.verseCount,
+    })
+    latestReaderPositionRef.current = null
+  }, [])
 
   const navigation = useMemo(
     () =>
@@ -69,10 +91,14 @@ function BibleViewer({
   }, [])
 
   useEffect(() => {
-    const resolvedPosition = resolveReadingPosition({
+    flushReaderPosition()
+
+    const storedProgress = loadStoredReadingProgress(localStorage, bibleData)
+    const resolvedPosition = resolveReaderStartPosition({
       bookmarkId: location.state?.bookmarkId,
       bookmarks: loadStoredBookmarks(localStorage),
-      storedProgress: loadStoredReadingProgress(localStorage, bibleData),
+      storedProgress,
+      storedPosition: loadStoredReaderPosition(localStorage, bibleData),
       books: bibleData,
       fallbackBook: bibleData[0],
     })
@@ -81,15 +107,18 @@ function BibleViewer({
 
     setSelectedBook(resolvedBook)
     setChapter(resolvedPosition.chapter)
+    setRestoredVerseIndex(resolvedPosition.verseIndex)
 
     if (resolvedPosition.source === 'bookmark') {
       setStatusMessage(`${resolvedPosition.bookName} ${resolvedPosition.chapter}장으로 이어 읽기를 준비했습니다.`)
+    } else if (resolvedPosition.source === 'position') {
+      setStatusMessage(`${resolvedPosition.bookName} ${resolvedPosition.chapter}장의 읽던 위치를 확인하고 있습니다.`)
     } else if (resolvedPosition.source === 'progress') {
       setStatusMessage(`${resolvedPosition.bookName} ${resolvedPosition.chapter}장에서 이어 읽기를 복원했습니다.`)
     }
 
     setIsLocationResolved(true)
-  }, [location.state])
+  }, [flushReaderPosition, location.state])
 
   useEffect(() => {
     if (!isLocationResolved) return
@@ -119,7 +148,6 @@ function BibleViewer({
 
     loadChapter()
     setBoundaryNotice('')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
 
     return () => controller.abort()
   }, [chapter, isLocationResolved, retryNonce, selectedBook])
@@ -136,6 +164,76 @@ function BibleViewer({
       bibleData
     )
   }, [chapter, isLocationResolved, selectedBook])
+
+  useEffect(() => {
+    if (loading || error || !content.length || !Number.isInteger(restoredVerseIndex)) return
+
+    if (restoredVerseIndex >= content.length) {
+      setRestoredVerseIndex(null)
+      setStatusMessage(`${selectedBook.name} ${chapter}장에서 이어 읽기를 복원했습니다.`)
+      return
+    }
+
+    setStatusMessage(
+      `${selectedBook.name} ${chapter}장 ${restoredVerseIndex + 1}절 부근에서 이어 읽습니다.`
+    )
+  }, [
+    chapter,
+    content.length,
+    error,
+    loading,
+    restoredVerseIndex,
+    selectedBook.name,
+  ])
+
+  const handleActiveVerseChange = useCallback(
+    (verseIndex) => {
+      if (!Number.isInteger(verseIndex) || verseIndex < 0 || verseIndex >= content.length) return
+
+      latestReaderPositionRef.current = {
+        bookName: selectedBook.name,
+        chapter,
+        verseIndex,
+        verseCount: content.length,
+      }
+
+      if (savePositionTimeoutRef.current === null) {
+        savePositionTimeoutRef.current = window.setTimeout(flushReaderPosition, 500)
+      }
+    },
+    [chapter, content.length, flushReaderPosition, selectedBook.name]
+  )
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') flushReaderPosition()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [flushReaderPosition])
+
+  useEffect(
+    () => () => {
+      flushReaderPosition()
+    },
+    [flushReaderPosition]
+  )
+
+  const moveReader = ({ book, nextChapter, verseIndex = null, statusMessage: nextStatusMessage, closeBookmarks = false }) => {
+    flushReaderPosition()
+    setSelectedBook(book)
+    setChapter(nextChapter)
+    setRestoredVerseIndex(verseIndex)
+
+    if (closeBookmarks) {
+      setIsBookmarksOpen(false)
+    }
+
+    if (nextStatusMessage) {
+      setStatusMessage(nextStatusMessage)
+    }
+  }
 
   const persistBookmarks = (nextBookmarks) => {
     if (!saveStoredBookmarks(localStorage, nextBookmarks)) {
@@ -163,10 +261,12 @@ function BibleViewer({
   const loadBookmark = (bookmark) => {
     const book = bibleData.find((item) => item.name === bookmark.bookName)
     if (!book) return
-    setSelectedBook(book)
-    setChapter(bookmark.chapter)
-    setIsBookmarksOpen(false)
-    setStatusMessage(`${bookmark.bookName} ${bookmark.chapter}장으로 이동했습니다.`)
+    moveReader({
+      book,
+      nextChapter: bookmark.chapter,
+      statusMessage: `${bookmark.bookName} ${bookmark.chapter}장으로 이동했습니다.`,
+      closeBookmarks: true,
+    })
   }
 
   const deleteBookmark = (id) => {
@@ -182,7 +282,10 @@ function BibleViewer({
     if (!target) return
 
     if (target.kind === 'move') {
-      setChapter(target.targetChapter)
+      moveReader({
+        book: selectedBook,
+        nextChapter: target.targetChapter,
+      })
       return
     }
 
@@ -206,15 +309,19 @@ function BibleViewer({
     const book = bibleData.find((item) => item.name === bookName)
     if (!book) return
 
-    setSelectedBook(book)
-    setChapter(1)
-    setStatusMessage(`${book.name} 1장으로 이동했습니다.`)
+    moveReader({
+      book,
+      nextChapter: 1,
+      statusMessage: `${book.name} 1장으로 이동했습니다.`,
+    })
   }
 
   const confirmTransition = () => {
     if (!pendingTransition) return
-    setSelectedBook(pendingTransition.targetBook)
-    setChapter(pendingTransition.targetChapter)
+    moveReader({
+      book: pendingTransition.targetBook,
+      nextChapter: pendingTransition.targetChapter,
+    })
     setPendingTransition(null)
   }
 
@@ -251,6 +358,8 @@ function BibleViewer({
             content={content}
             loading={loading}
             error={error}
+            restoredVerseIndex={restoredVerseIndex}
+            onActiveVerseChange={handleActiveVerseChange}
             onRetry={retryLoad}
           />
           <div className="pt-1">
@@ -270,7 +379,11 @@ function BibleViewer({
         chapter={chapter}
         onOpenChange={setIsLocationDialogOpen}
         onBookChange={changeBook}
-        onChapterChange={setChapter}
+        onChapterChange={(nextChapter) =>
+          moveReader({
+            book: selectedBook,
+            nextChapter,
+          })}
         onRequestMove={requestChapterMove}
       />
       <BookmarksDialog

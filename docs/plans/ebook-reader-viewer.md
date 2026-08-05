@@ -1,7 +1,7 @@
 # E-book Bible Viewer Workstream Plan
 
 ## Status
-- State: In execution — e-book surface and focus/preferences complete; verse resume next
+- State: In execution — e-book surface, focus/preferences, and verse resume complete; accessibility next
 - Last updated: 2026-07-26
 - Owner scope: Reader layout, navigation, focus mode, preferences, verse-position resume, accessibility, and responsive behavior
 - Data dependency: `docs/plans/data-localization-and-integrity.md`
@@ -291,6 +291,9 @@ Tasks:
 - 지원하지 않는 브라우저, quota 부족, 오프라인 미저장 권에 복구 가능한 안내를 제공한다.
 
 ### 7. Add verse-position tracking
+Status:
+- Complete
+
 Files:
 - Update `ReaderSurface`
 - Use `src/utils/readerPosition.js`
@@ -300,6 +303,13 @@ Tasks:
 - 일반 재진입에서만 절 위치를 복원한다.
 - 북마크 진입과 명시적 장 이동에서는 장 처음을 우선한다.
 - 글자 크기/본문 폭 변경 후에도 절 식별자를 기준으로 복원한다.
+
+Result:
+- `ReaderSurface`가 `IntersectionObserver`로 현재 viewport 중앙에 가장 가까운 절을 추적한다.
+- 최근 절 위치는 500ms 단위로 제한해 저장하고, 탭이 숨겨지거나 뷰어가 unmount될 때 마지막 위치를 즉시 반영한다.
+- 일반 `/viewer` 재진입에서만 같은 장의 절 위치를 복원하며, 북마크와 명시적 장 이동은 장 처음을 우선한다.
+- 본문 로드 후 실제 절 수로 저장값을 다시 검증해 범위를 벗어난 절은 장 단위 복원으로 안전하게 낮춘다.
+- 새로고침 후 동일 절 복원과 명시적 다음 장 이동 시 본문 시작을 로컬 브라우저에서 확인했다.
 
 ### 8. Add keyboard and accessibility behavior
 Files:
