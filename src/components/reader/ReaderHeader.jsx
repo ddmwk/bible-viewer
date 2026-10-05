@@ -1,6 +1,5 @@
 import { Expand, MapPinned, PanelRightOpen, Pin, Settings2, Shrink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 function ReaderHeader({
   isFocusMode,
@@ -12,38 +11,31 @@ function ReaderHeader({
   onExitFocusMode,
 }) {
   return (
-    <CardHeader className="gap-3 pb-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <CardTitle className="text-2xl">성경 읽기</CardTitle>
-          <CardDescription className="mt-2 leading-6">
-            긴 읽기에 적합한 툴바와 본문 레이아웃으로 정리했습니다.
-          </CardDescription>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="secondary" onClick={onOpenLocation}>
-            <MapPinned className="h-4 w-4" />
-            본문 위치 변경
-          </Button>
-          <Button variant="secondary" onClick={onOpenBookmarks}>
-            <PanelRightOpen className="h-4 w-4" />
-            북마크 목록
-          </Button>
-          <Button variant="secondary" onClick={onOpenSettings}>
-            <Settings2 className="h-4 w-4" />
-            읽기 설정
-          </Button>
-          <Button onClick={onSaveBookmark}>
-            <Pin className="h-4 w-4" />
-            현재 장 저장
-          </Button>
-          <Button variant={isFocusMode ? 'primary' : 'secondary'} onClick={isFocusMode ? onExitFocusMode : onEnterFocusMode}>
-            {isFocusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
-            {isFocusMode ? '집중 모드 종료' : '집중 모드'}
-          </Button>
-        </div>
+    <header className="reader-toolbar" aria-label="읽기 도구">
+      <h2 className="sr-only">읽기 도구</h2>
+      <div className="reader-toolbar__actions">
+        <Button variant="ghost" onClick={onOpenLocation}>
+          <MapPinned className="h-4 w-4" />
+          본문 위치 변경
+        </Button>
+        <Button variant="ghost" onClick={onOpenBookmarks}>
+          <PanelRightOpen className="h-4 w-4" />
+          북마크 목록
+        </Button>
+        <Button variant="ghost" onClick={onOpenSettings}>
+          <Settings2 className="h-4 w-4" />
+          읽기 설정
+        </Button>
+        <Button variant="ghost" onClick={onSaveBookmark}>
+          <Pin className="h-4 w-4" />
+          현재 장 저장
+        </Button>
+        <Button variant={isFocusMode ? 'primary' : 'ghost'} onClick={isFocusMode ? onExitFocusMode : onEnterFocusMode}>
+          {isFocusMode ? <Shrink className="h-4 w-4" /> : <Expand className="h-4 w-4" />}
+          {isFocusMode ? '집중 모드 종료' : '집중 모드'}
+        </Button>
       </div>
-    </CardHeader>
+    </header>
   )
 }
 

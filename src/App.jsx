@@ -8,7 +8,6 @@ import TargetCalculator from './components/TargetCalculator'
 import BibleViewer from './components/BibleViewer'
 import OfflineBibleManager from './components/OfflineBibleManager'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { loadReaderPreferences, saveReaderPreferences } from './utils/readerPreferences'
 import { getReaderPreferenceCssVariables } from './utils/readerPreferenceStyle'
@@ -150,13 +149,16 @@ function App() {
     setIsMobileNavOpen(false)
   }
 
-  const renderDisplayControls = () => (
-    <Card className="border-[color:var(--border-subtle)] bg-transparent shadow-none">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-lg">읽기 환경</CardTitle>
-        <CardDescription>지금 쓰는 설정은 그대로 두고 테마와 글자 크기만 편하게 바꿉니다.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-5">
+  const renderDisplayControls = ({ mobile = false } = {}) => {
+    const titleId = mobile ? 'app-display-controls-mobile-title' : 'app-display-controls-title'
+
+    return (
+    <section className="app-display-controls" aria-labelledby={titleId}>
+      <div className="app-display-controls__header">
+        <h2 id={titleId}>읽기 환경</h2>
+        <p>테마와 글자 크기</p>
+      </div>
+      <div className="grid gap-5">
         <div className="app-settings">
           <div className="app-settings__label">
             <span>글자 크기</span>
@@ -200,9 +202,10 @@ function App() {
             ))}
           </div>
         </div>
-      </CardContent>
-    </Card>
-  )
+      </div>
+    </section>
+    )
+  }
 
   const renderNav = ({ mobile = false } = {}) => (
     <>
@@ -238,7 +241,7 @@ function App() {
           )
         })}
       </nav>
-      {renderDisplayControls()}
+      {renderDisplayControls({ mobile })}
     </>
   )
 

@@ -5,12 +5,9 @@ const DANGER_ALERT_CLASS =
 
 function ReaderStatusRegion({ statusMessage, boundaryNotice }) {
   return (
-    <div aria-live="polite" className="grid gap-3">
+    <div aria-live="polite" className="reader-status grid gap-3">
       {statusMessage ? (
-        <Alert>
-          <AlertTitle>읽기 상태</AlertTitle>
-          <AlertDescription>{statusMessage}</AlertDescription>
-        </Alert>
+        <p className="reader-status__message">{statusMessage}</p>
       ) : null}
       {boundaryNotice ? (
         <Alert className={DANGER_ALERT_CLASS}>

@@ -2,7 +2,7 @@
 
 ## Source of truth
 - Status: Active — reader foundation, e-book surface, focus/preferences, and verse resume implemented; accessibility polish pending
-- Last refreshed: 2026-07-26
+- Last refreshed: 2026-08-05
 - Primary product surfaces: 앱 셸(`src/App.jsx`), 대시보드(`src/components/Dashboard.jsx`), 목표 계산기(`src/components/TargetCalculator.jsx`), 분량 계산기(`src/components/CountCalculator.jsx`), 1년 회독 계산기(`src/components/DailyCalculator.jsx`), 성경 뷰어(`src/components/BibleViewer.jsx`)
 - Evidence reviewed:
   - `package.json` — React 19 + Vite 7 + `react-router-dom` 7 유지, 테스트 스크립트 추가됨
@@ -121,6 +121,7 @@
 - Principle 2: **Planning without friction** — 계산기는 입력 수를 최소화하고 결과/기록을 즉시 재사용 가능해야 한다.
 - Principle 3: **Persistent familiarity** — 기존 localStorage 키, 3단계 선택 구조, 한국어 라벨을 보존한다.
 - Principle 4: **Calm depth** — 화려함보다 서재 같은 집중감, 그러나 단조롭지 않은 고급감을 준다.
+- Principle 5: **Hierarchy without containers** — 화면의 위계는 중첩 카드보다 여백, 타이포, 정렬, 한 번의 구분선으로 만든다.
 - Tradeoffs:
   - Tailwind/shadcn 도입으로 초기 리팩터링 비용은 증가하지만 이후 화면별 일관성 확보가 쉬워진다.
   - 본문 뷰어의 집중도를 위해 장식은 줄이되, 홈과 결과 패널에는 충분한 시각적 계층을 둔다.
@@ -141,8 +142,9 @@
   - 주요 화면 좌우 패딩 16/24/32px 계층
   - 카드 내부 간격 20~24px, reader 본문은 더 넓은 line-height 사용
 - Shape/radius/elevation:
-  - 앱 셸 24px radius(데스크톱), 카드 20px, 입력/버튼 14px
-  - 그림자는 얕고 넓게, border와 함께 사용
+  - 앱 셸과 route content는 canvas 위에 직접 배치하고, radius는 실제로 독립된 표면에만 사용한다.
+  - 한 route에는 시각적으로 떠 있는 주 표면을 최대 하나만 허용하고, 그 안의 중첩 Card에는 shadow와 외곽 border를 사용하지 않는다.
+  - 그림자는 Dialog, drawer, sticky selection bar처럼 일시적으로 떠 있는 UI에만 사용한다.
 - Motion:
   - 140ms~220ms 범위의 짧은 easing
   - 사이드 패널, 북마크, 결과 등장만 강조

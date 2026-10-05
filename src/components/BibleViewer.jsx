@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { bibleData } from '../data/bibleData'
-import { Card, CardContent } from '@/components/ui/card'
 import {
   loadStoredReadingProgress,
   saveReadingProgress,
@@ -336,37 +335,31 @@ function BibleViewer({
   }, [isBookmarksOpen, isLocationDialogOpen, isSettingsDialogOpen, onOverlayChange, pendingTransition])
 
   return (
-    <div className={`bible-viewer grid gap-6 ${isFocusMode ? 'bible-viewer--focus' : ''}`} style={readerPreferenceStyle}>
-      <Card className="overflow-hidden">
-        <ReaderHeader
-          isFocusMode={isFocusMode}
-          onOpenLocation={() => setIsLocationDialogOpen(true)}
-          onOpenBookmarks={() => setIsBookmarksOpen(true)}
-          onOpenSettings={() => setIsSettingsDialogOpen(true)}
-          onSaveBookmark={saveBookmark}
-          onEnterFocusMode={onEnterFocusMode}
-          onExitFocusMode={onExitFocusMode}
-        />
-        <CardContent className="grid gap-5">
-          <ReaderStatusRegion
-            statusMessage={statusMessage}
-            boundaryNotice={boundaryNotice}
-          />
-          <ReaderSurface
-            selectedBook={selectedBook}
-            chapter={chapter}
-            content={content}
-            loading={loading}
-            error={error}
-            restoredVerseIndex={restoredVerseIndex}
-            onActiveVerseChange={handleActiveVerseChange}
-            onRetry={retryLoad}
-          />
-          <div className="pt-1">
-            <ChapterNavigation onRequestMove={requestChapterMove} />
-          </div>
-        </CardContent>
-      </Card>
+    <div className={`bible-viewer ${isFocusMode ? 'bible-viewer--focus' : ''}`} style={readerPreferenceStyle}>
+      <ReaderHeader
+        isFocusMode={isFocusMode}
+        onOpenLocation={() => setIsLocationDialogOpen(true)}
+        onOpenBookmarks={() => setIsBookmarksOpen(true)}
+        onOpenSettings={() => setIsSettingsDialogOpen(true)}
+        onSaveBookmark={saveBookmark}
+        onEnterFocusMode={onEnterFocusMode}
+        onExitFocusMode={onExitFocusMode}
+      />
+      <ReaderStatusRegion
+        statusMessage={statusMessage}
+        boundaryNotice={boundaryNotice}
+      />
+      <ReaderSurface
+        selectedBook={selectedBook}
+        chapter={chapter}
+        content={content}
+        loading={loading}
+        error={error}
+        restoredVerseIndex={restoredVerseIndex}
+        onActiveVerseChange={handleActiveVerseChange}
+        onRetry={retryLoad}
+      />
+      <ChapterNavigation onRequestMove={requestChapterMove} />
 
       <BoundaryTransitionDialog
         transition={pendingTransition}

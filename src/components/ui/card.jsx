@@ -5,8 +5,9 @@ const Card = forwardRef(function Card({ className, ...props }, ref) {
   return (
     <div
       ref={ref}
+      data-slot="card"
       className={cn(
-        'rounded-[var(--radius-md)] border border-[color:var(--border-subtle)] bg-[var(--bg-panel)] text-[var(--fg-primary)] shadow-[var(--shadow-soft)]',
+        'rounded-[var(--radius-md)] border border-[color:var(--border-subtle)] bg-[var(--bg-panel)] text-[var(--fg-primary)] shadow-none',
         className
       )}
       {...props}
@@ -15,7 +16,7 @@ const Card = forwardRef(function Card({ className, ...props }, ref) {
 })
 
 const CardHeader = forwardRef(function CardHeader({ className, ...props }, ref) {
-  return <div ref={ref} className={cn('flex flex-col gap-2 p-6', className)} {...props} />
+  return <div ref={ref} data-slot="card-header" className={cn('flex flex-col gap-2 p-6', className)} {...props} />
 })
 
 const CardTitle = forwardRef(function CardTitle({ className, ...props }, ref) {
@@ -27,7 +28,7 @@ const CardDescription = forwardRef(function CardDescription({ className, ...prop
 })
 
 const CardContent = forwardRef(function CardContent({ className, ...props }, ref) {
-  return <div ref={ref} className={cn('px-6 pb-6', className)} {...props} />
+  return <div ref={ref} data-slot="card-content" className={cn('px-6 pb-6', className)} {...props} />
 })
 
 const CardFooter = forwardRef(function CardFooter({ className, ...props }, ref) {

@@ -2,8 +2,8 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(248px, 296px) minmax(0, 1fr);
-  gap: 24px;
-  padding: 24px;
+  gap: 0;
+  padding: 0;
   position: relative;
 }
 
@@ -15,18 +15,15 @@
 
 .app-sidebar {
   position: sticky;
-  top: 24px;
+  top: 0;
   align-self: start;
-  min-height: calc(100vh - 48px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 24px;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--bg-panel) 92%, transparent);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
+  padding: 32px 24px;
+  background: color-mix(in srgb, var(--bg-panel) 54%, transparent);
+  border-right: 1px solid var(--border-subtle);
 }
 
 .app-sidebar__brand,
@@ -134,6 +131,36 @@
   border-top: 1px solid var(--border-subtle);
 }
 
+.app-display-controls {
+  display: grid;
+  gap: 18px;
+  margin-top: auto;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.app-display-controls__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app-display-controls__header h2,
+.app-display-controls__header p {
+  margin: 0;
+}
+
+.app-display-controls__header h2 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+.app-display-controls__header p {
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
 .app-settings {
   display: grid;
   gap: 12px;
@@ -185,7 +212,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0;
 }
 
 .app-main--reader-focus {
@@ -198,12 +225,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 22px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-panel) 90%, transparent);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
+  padding: 28px clamp(24px, 4vw, 56px) 22px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
 }
 
 .app-topbar__title {
@@ -219,12 +243,8 @@
 
 .app-content {
   min-width: 0;
-  padding: 24px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: color-mix(in srgb, var(--bg-panel) 96%, transparent);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
+  padding: clamp(24px, 4vw, 56px);
+  background: transparent;
   font-size: var(--app-font-size);
 }
 
@@ -276,6 +296,62 @@
 .bible-viewer--focus {
   min-height: calc(100vh - clamp(36px, 8vw, 72px));
   align-content: start;
+}
+
+.app-content [data-slot="card"] [data-slot="card"] {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.reader-toolbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: flex-end;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.reader-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.reader-status,
+.reader-chapter-navigation {
+  width: min(100%, var(--reader-content-width, 700px));
+  margin-inline: auto;
+}
+
+.reader-status__message {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.reader-chapter-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bible-viewer {
+  display: grid;
+  gap: clamp(20px, 3vw, 32px);
+}
+
+.bible-viewer--focus .reader-toolbar {
+  position: sticky;
+  top: 0;
+  padding: 12px 0;
+  background: color-mix(in srgb, var(--bg-canvas) 92%, transparent);
+  backdrop-filter: blur(14px);
 }
 
 .reader-location-bar {
@@ -703,7 +779,7 @@ select:focus {
 @media (max-width: 1023px) {
   .app-shell {
     grid-template-columns: 1fr;
-    padding: 16px;
+    padding: 0;
   }
 
   .app-sidebar {
@@ -712,8 +788,10 @@ select:focus {
 
   .app-topbar {
     position: sticky;
-    top: 12px;
+    top: 0;
     z-index: 10;
+    background: color-mix(in srgb, var(--bg-canvas) 92%, transparent);
+    backdrop-filter: blur(14px);
   }
 
   .app-topbar__menu {
@@ -721,7 +799,7 @@ select:focus {
   }
 
   .app-content {
-    padding: 18px;
+    padding: 24px 18px 36px;
   }
 
   .app-content--reader-focus {
@@ -766,8 +844,8 @@ select:focus {
 
 @media (max-width: 480px) {
   .app-shell {
-    padding: 12px;
-    gap: 16px;
+    padding: 0;
+    gap: 0;
   }
 
   .app-topbar,

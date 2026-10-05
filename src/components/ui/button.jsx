@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = {
-  primary: 'bg-[var(--accent-primary)] text-[var(--accent-foreground)] shadow-[var(--shadow-soft)] hover:brightness-[1.04]',
+  primary: 'bg-[var(--accent-primary)] text-[var(--accent-foreground)] shadow-none hover:brightness-[1.04]',
   secondary: 'bg-[var(--bg-elevated)] text-[var(--fg-primary)] border border-[color:var(--border-subtle)] hover:bg-[color:var(--bg-panel)]',
   ghost: 'bg-transparent text-[var(--fg-secondary)] hover:bg-[color:color-mix(in_srgb,var(--accent-primary)_10%,transparent)] hover:text-[var(--fg-primary)]',
   destructive: 'bg-[var(--accent-danger)] text-white hover:brightness-[1.03]'

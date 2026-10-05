@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 
 function ChapterNavigation({ onRequestMove }) {
   return (
-    <div className="flex flex-wrap justify-between gap-3">
+    <nav className="reader-chapter-navigation" aria-label="장 이동">
       <Button
         variant="secondary"
         size="lg"
@@ -20,7 +20,7 @@ function ChapterNavigation({ onRequestMove }) {
         다음 장
         <MoveRight className="h-4 w-4" />
       </Button>
-    </div>
+    </nav>
   )
 }
 

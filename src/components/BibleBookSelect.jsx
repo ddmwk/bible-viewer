@@ -32,7 +32,7 @@ function BibleBookSelect({
   return (
     <fieldset
       className={[
-        'grid gap-4 rounded-[var(--radius-md)] border border-[color:var(--border-subtle)] bg-[color:color-mix(in_srgb,var(--bg-elevated)_92%,transparent)] p-4 md:grid-cols-3',
+        'grid gap-4 border-y border-[color:var(--border-subtle)] py-5 md:grid-cols-3',
         className,
       ]
         .filter(Boolean)

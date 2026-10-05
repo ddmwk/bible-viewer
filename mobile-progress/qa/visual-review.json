@@ -1,0 +1,12 @@
+{
+  "skill": "visual-verdict",
+  "reference_images": [],
+  "score": null,
+  "verdict": "pass",
+  "category_match": true,
+  "differences": [],
+  "suggestions": [],
+  "reasoning": "기준 이미지가 제공되지 않아 일치 점수는 산정하지 않음. 간격 조정 후 390×844 화면에서 완료 버튼이 하단 메뉴 위에 노출됨을 캡처와 좌표 검증으로 확인. 320/390/430/1024px의 모든 탭에서 가로 넘침 없음.",
+  "next_actions": [],
+  "limitations": ["실물 iPhone/Android 설치와 화면은 미검증", "픽셀 일치 비교가 아닌 실제 렌더링의 사용성 검수"]
+}
